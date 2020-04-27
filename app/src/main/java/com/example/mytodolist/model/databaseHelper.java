@@ -9,11 +9,11 @@ public class databaseHelper extends SQLiteOpenHelper {
     private Context context;
     private static final int  DB_VERSION=1;
     private static String databaseName="todoDatabase";
-    private static final String TODO_TABLE_CREATE="CREATE TABLE " +myTodo.TODO_TABLE_NAME+ "("+
-            myTodo.TODO_COLUMN_ONE+" "+myTodo.TODO_COLUMN_ONE_TYPE+", "+myTodo.TODO_COLUMN_TWO+" "+
-            myTodo.TODO_COLUM_TWO_TYPE+");";
+    private static final String TODO_TABLE_CREATE="CREATE TABLE " + task.TODO_TABLE_NAME+ "("+
+            task.TODO_COLUMN_ONE+" "+ task.TODO_COLUMN_ONE_TYPE+", "+ task.TODO_COLUMN_TWO+" "+
+            task.TODO_COLUM_TWO_TYPE+");";
 
-    public static final String TODO_TABLE_DELETE="DROP TABLE IF EXISTS"+myTodo.TODO_TABLE_NAME;
+    public static final String TODO_TABLE_DELETE="DROP TABLE IF EXISTS "+ task.TODO_TABLE_NAME;
 
 
     public databaseHelper(Context c)

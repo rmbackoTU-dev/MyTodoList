@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import androidx.annotation.StringRes;
+import java.util.ArrayList;
 
 public class databaseManager {
 
@@ -32,8 +32,8 @@ public class databaseManager {
     public void insert(String value)
             throws SQLException
     {
-        String rawQuery="SELECT " +myTodo.TODO_COLUMN_ONE+ " FROM "+
-                myTodo.TODO_TABLE_NAME+";";
+        String rawQuery="SELECT " + task.TODO_COLUMN_ONE+ " FROM "+
+                task.TODO_TABLE_NAME+";";
         Cursor idCursor=readableDb.rawQuery(rawQuery, null);
         if(idCursor.getCount() >0 && idCursor.moveToFirst())
         {
@@ -42,16 +42,16 @@ public class databaseManager {
         }
         System.out.println("Count:  "+idCursor.getCount());
         ContentValues val=new ContentValues();
-        val.put(myTodo.TODO_COLUMN_ONE,  id);
-        val.put(myTodo.TODO_COLUMN_TWO, value);
-        writableDb.insertOrThrow(myTodo.TODO_TABLE_NAME, null, val);
+        val.put(task.TODO_COLUMN_ONE,  id);
+        val.put(task.TODO_COLUMN_TWO, value);
+        writableDb.insertOrThrow(task.TODO_TABLE_NAME, null, val);
     }
 
     public Cursor getItemById(int id)
     {
-        String query="SELECT "+myTodo.TODO_COLUMN_ONE +
-                " , "+ myTodo.TODO_COLUMN_TWO+ " FROM "+
-                myTodo.TODO_TABLE_NAME+ " WHERE "+myTodo.TODO_COLUMN_ONE+"='"+
+        String query="SELECT "+ task.TODO_COLUMN_ONE +
+                " , "+ task.TODO_COLUMN_TWO+ " FROM "+
+                task.TODO_TABLE_NAME+ " WHERE "+ task.TODO_COLUMN_ONE+"='"+
                 id+"';";
         //String idString=new Integer(id).toString();
         //String[] projector={
@@ -69,9 +69,9 @@ public class databaseManager {
     public Cursor getItemByText(String text)
     {
 
-        String query="SELECT "+myTodo.TODO_COLUMN_ONE +
-                " , "+ myTodo.TODO_COLUMN_TWO+ " FROM "+
-                myTodo.TODO_TABLE_NAME+ " WHERE "+myTodo.TODO_COLUMN_TWO+"='"+
+        String query="SELECT "+ task.TODO_COLUMN_ONE +
+                " , "+ task.TODO_COLUMN_TWO+ " FROM "+
+                task.TODO_TABLE_NAME+ " WHERE "+ task.TODO_COLUMN_TWO+"='"+
                 text+"';";
         //String selector=myTodo.TODO_COLUMN_TWO + "='"+text+"'";
         //String[] projector={
@@ -90,7 +90,7 @@ public class databaseManager {
     public Cursor getAllRows()
     {
 
-        String rawQuery="SELECT * FROM "+myTodo.TODO_TABLE_NAME+";";
+        String rawQuery="SELECT * FROM "+ task.TODO_TABLE_NAME+";";
         Cursor newCursor=readableDb.rawQuery(rawQuery, null);
         String[] columns=newCursor.getColumnNames();
         for(int i=0; i< columns.length; i++)
@@ -102,11 +102,11 @@ public class databaseManager {
 
     public void deleteById(int id)
     {
-        String selection = myTodo.TODO_COLUMN_ONE+" LIKE ?";
+        String selection = task.TODO_COLUMN_ONE+" LIKE ?";
         //Specify the arguments in the place holder order.
         String[] selectionArgs={ new Integer(id).toString()};
         //Issue SQL statement.
-        int deletedRows=writableDb.delete(myTodo.TODO_TABLE_NAME, selection, selectionArgs);
+        int deletedRows=writableDb.delete(task.TODO_TABLE_NAME, selection, selectionArgs);
     }
 
 
@@ -115,12 +115,12 @@ public class databaseManager {
     {
         //New Value Column
         ContentValues updatedValue=new ContentValues();
-        updatedValue.put(myTodo.TODO_TABLE_NAME, value);
+        updatedValue.put(task.TODO_TABLE_NAME, value);
 
         //find which row to update based on the id
         String integerString=new Integer(id).toString();
-        String countQuery="SELECT * FROM "+myTodo.TODO_TABLE_NAME+
-                " WHERE "+myTodo.TODO_COLUMN_ONE+" ="+integerString+";";
+        String countQuery="SELECT * FROM "+ task.TODO_TABLE_NAME+
+                " WHERE "+ task.TODO_COLUMN_ONE+" ="+integerString+";";
         Cursor cursor=readableDb.rawQuery(countQuery, null );
         int count= cursor.getCount();
 
@@ -130,10 +130,130 @@ public class databaseManager {
         }
         else
         {
-            String updateQuery="UPDATE "+myTodo.TODO_TABLE_NAME+" SET "+
-                    myTodo.TODO_COLUMN_TWO+"='"+value+"'"+"WHERE "+
-                    myTodo.TODO_COLUMN_ONE+"="+integerString+";";
+            String updateQuery="UPDATE "+ task.TODO_TABLE_NAME+" SET "+
+                    task.TODO_COLUMN_TWO+"='"+value+"'"+"WHERE "+
+                    task.TODO_COLUMN_ONE+"="+integerString+";";
             readableDb.execSQL(updateQuery);
+        }
+    }
+
+
+    public task getTaskbyID(int taskId)
+    {
+        String query="SELECT "+ task.TODO_COLUMN_ONE +
+                " , "+ task.TODO_COLUMN_TWO+ " FROM "+
+                task.TODO_TABLE_NAME+ " WHERE "+ task.TODO_COLUMN_ONE+"='"+
+                taskId+"';";
+        Cursor newCursor=readableDb.rawQuery(query, null);
+        task newTodo=null;
+        int newTaskId;
+        String newTaskItem;
+        if(newCursor.moveToFirst() && (newCursor.getCount() > 0))
+        {
+            newTaskId=newCursor.getInt(
+                    newCursor.getColumnIndex("id"));
+            newTaskItem=newCursor.getString(
+                    newCursor.getColumnIndex("item"));
+            newTodo=new task(newTaskItem, newTaskId);
+        }
+        return newTodo;
+    }
+
+    public task[] getAllTask()
+    {
+        task[] taskList=null;
+        int taskId;
+        String taskItem;
+        String rawQuery="SELECT * FROM "+ task.TODO_TABLE_NAME+";";
+        Cursor newCursor=readableDb.rawQuery(rawQuery, null);
+        if(newCursor.moveToFirst() && (newCursor.getCount() > 0))
+        {
+            ArrayList listOfTasks=new ArrayList();
+            while(!newCursor.isAfterLast())
+            {
+                taskId=newCursor.getInt(
+                        newCursor.getColumnIndex("id"));
+                taskItem=newCursor.getString(
+                        newCursor.getColumnIndex("item")
+                );
+                task newTodo=new task(taskItem, taskId);
+                listOfTasks.add(newTodo);
+                newCursor.moveToNext();
+            }
+        }
+        else
+        {
+            ArrayList emptyList=new ArrayList<task>();
+            taskList=(task[]) emptyList.toArray();
+        }
+        return taskList;
+    }
+
+    /**
+     *
+     * @param taskToRemove
+     * @return boolean if delete task was successful
+     */
+    public boolean deleteTask(task taskToRemove)
+    {
+
+        try {
+            String selection = task.TODO_COLUMN_ONE + " LIKE ?";
+            //Specify the arguments in the place holder order.
+            int currentId = taskToRemove.getId();
+            String[] selectionArgs = {new Integer(currentId).toString()};
+            //Issue SQL statement.
+            int deletedRows = writableDb.delete(task.TODO_TABLE_NAME, selection, selectionArgs);
+            return true;
+        }catch(SQLException e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+    * @param  taskToUpdate
+     * @return  boolean if update task was successful
+     * @sideeffect taskToUpdate values are updated
+     */
+    public boolean updateTask(task taskToUpdate, String newItem)
+    {
+        try {
+            int queryTaskID;
+            String queryTaskItem;
+            int currentId = taskToUpdate.getId();
+            String currentItem = taskToUpdate.getItem();
+            ContentValues updateValues = new ContentValues();
+            updateValues.put(task.TODO_COLUMN_ONE, currentId);
+            updateValues.put(task.TODO_COLUMN_TWO, currentItem);
+
+            String updateSelectionQuery = "SELECT " + task.TODO_COLUMN_ONE + ", " +
+                    task.TODO_COLUMN_TWO + " FROM " +
+                    task.TODO_TABLE_NAME + "WHERE " +
+                    task.TODO_COLUMN_ONE + "='" +
+                    currentId + "';";
+            Cursor updateCursor = readableDb.rawQuery(updateSelectionQuery, null);
+
+            if (updateCursor.moveToFirst() && updateCursor.getCount() > 0) {
+
+                queryTaskID=updateCursor.getInt(
+                        updateCursor.getColumnIndex("id"));
+                String updateQuery="UPDATE "+ task.TODO_TABLE_NAME+ " SET "+
+                        task.TODO_COLUMN_TWO+"='"+newItem+"' WHERE "+
+                        task.TODO_COLUMN_ONE+"='"+queryTaskID+"';";
+                writableDb.execSQL(updateQuery);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }catch (SQLException e)
+        {
+            e.printStackTrace();
+            return false;
         }
     }
 

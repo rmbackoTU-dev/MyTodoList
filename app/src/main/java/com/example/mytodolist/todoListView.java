@@ -38,9 +38,7 @@ public class todoListView extends AppCompatActivity {
         Intent externalIntent=getIntent();
         if(externalIntent.getStringExtra(ERROR_TEXT) != null)
         {
-            Toast errorToast=new Toast(this);
-            errorToast.setText(externalIntent.getStringExtra(ERROR_TEXT));
-            errorToast.setDuration(Toast.LENGTH_LONG);
+            System.err.println(externalIntent.getStringExtra(ERROR_TEXT));
         }
 
         addButton.setOnClickListener(new View.OnClickListener() {

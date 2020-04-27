@@ -1,9 +1,9 @@
 package com.example.mytodolist.model;
 
-public class myTodo {
+public class task {
 
-    String item;
-    int id;
+    private String item;
+    private int id;
 
 
     public static final String TODO_TABLE_NAME="todo";
@@ -12,7 +12,7 @@ public class myTodo {
     public static final String TODO_COLUMN_TWO="item";
     public static final String TODO_COLUM_TWO_TYPE="TEXT";
 
-    public myTodo(String item, int id)
+    public task(String item, int id)
     {
         this.item=item;
         this.id=id;

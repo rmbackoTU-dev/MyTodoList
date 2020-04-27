@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.example.mytodolist.model.databaseManager;
-import com.example.mytodolist.model.myTodo;
 
 public class IndividualTodoItemView extends AppCompatActivity {
 
