@@ -2,6 +2,7 @@ package com.example.mytodolist;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -11,13 +12,16 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.mytodolist.model.databaseManager;
+import com.example.mytodolist.model.task;
 
 public class IndividualTodoItemView extends AppCompatActivity {
 
     databaseManager manager;
-    public static final String ITEM_STRING="com.example.mytodolist.MESSAGE";
+    private boolean updateSet=false;
+    private task updateTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,14 @@ public class IndividualTodoItemView extends AppCompatActivity {
         final Button addToList=findViewById(R.id.addToList);
         addToList.setEnabled(false);
 
+        Intent updateIntent=getIntent();
+        updateSet=updateIntent.getExtras().getBoolean("UPDATE_SET");
+        System.out.println("UPDATE IS SET TO"+updateSet);
+        if(updateSet)
+        {
+            updateTask=(task) updateIntent.getSerializableExtra(todoListView.TODO_OBJ);
+            setUpdateHint(updateTask.getItem().toString());
+        }
 
         TextWatcher itemTextWatcher=new TextWatcher() {
             @Override
@@ -39,14 +51,6 @@ public class IndividualTodoItemView extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 addToList.setEnabled(!getItemText().isEmpty());
-                if(getItemText().isEmpty())
-                {
-                    System.out.println("disabled");
-                }
-                else
-                {
-                    System.out.println("enabled");
-                }
             }
 
             @Override
@@ -60,21 +64,25 @@ public class IndividualTodoItemView extends AppCompatActivity {
         addToList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent addToList=new Intent(v.getContext(), todoListView.class);
-                if(addItemToDatabase(getItemText())){
-                    String itemString=getItemText();
-                    addToList.putExtra(ITEM_STRING, itemString);
+                Intent returnToList=new Intent(v.getContext(), todoListView.class);
+                if(updateSet)
+                {
+                    updateItemInDatabase(updateTask, getItemText());
+
                 }
                 else
                 {
-                    //add an error textbox
+                    if (addItemToDatabase(getItemText())) {
+                        System.out.println("Success");
+                    } else {
+                        System.out.println("Fail");
+                    }
                 }
-                startActivity(addToList);
+                startActivity(returnToList);
             }
         });
 
     }
-
 
     public boolean addItemToDatabase(String itemText)
     {
@@ -97,9 +105,30 @@ public class IndividualTodoItemView extends AppCompatActivity {
         return success;
     }
 
+    public boolean updateItemInDatabase(task updateTask, String updateText)
+    {
+        boolean success=false;
+        try
+        {
+            manager.updateTask(updateTask, updateText);
+            success=true;
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return  success;
+    }
+
     public String getItemText()
     {
         EditText itemText=findViewById(R.id.todoEditBox);
         return itemText.getText().toString();
+    }
+
+    public void setUpdateHint( CharSequence hint)
+    {
+        EditText itemText=findViewById(R.id.todoEditBox);
+        itemText.setHint(hint);
     }
 }

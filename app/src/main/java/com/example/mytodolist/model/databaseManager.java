@@ -159,9 +159,9 @@ public class databaseManager {
         return newTodo;
     }
 
-    public task[] getAllTask()
+    public ArrayList<task> getAllTask()
     {
-        task[] taskList=null;
+
         int taskId;
         String taskItem;
         String rawQuery="SELECT * FROM "+ task.TODO_TABLE_NAME+";";
@@ -173,28 +173,31 @@ public class databaseManager {
             {
                 taskId=newCursor.getInt(
                         newCursor.getColumnIndex("id"));
+                System.out.println("id: "+taskId);
                 taskItem=newCursor.getString(
                         newCursor.getColumnIndex("item")
                 );
+                System.out.println("item: "+taskItem);
                 task newTodo=new task(taskItem, taskId);
                 listOfTasks.add(newTodo);
                 newCursor.moveToNext();
             }
+            return  listOfTasks;
         }
         else
         {
             ArrayList emptyList=new ArrayList<task>();
-            taskList=(task[]) emptyList.toArray();
+            System.err.println("Returning empty array");
+            return emptyList;
         }
-        return taskList;
     }
 
     /**
      *
      * @param taskToRemove
-     * @return boolean if delete task was successful
+     * @sideeffect setsDeletedOnTask
      */
-    public boolean deleteTask(task taskToRemove)
+    public void deleteTask(task taskToRemove)
     {
 
         try {
@@ -204,20 +207,20 @@ public class databaseManager {
             String[] selectionArgs = {new Integer(currentId).toString()};
             //Issue SQL statement.
             int deletedRows = writableDb.delete(task.TODO_TABLE_NAME, selection, selectionArgs);
-            return true;
+            taskToRemove.setDeleted(true);
         }catch(SQLException e)
         {
             e.printStackTrace();
-            return false;
+            taskToRemove.setDeleted(false);
         }
     }
 
     /**
     * @param  taskToUpdate
-     * @return  boolean if update task was successful
      * @sideeffect taskToUpdate values are updated
+     * @sideeffect sets updated on task
      */
-    public boolean updateTask(task taskToUpdate, String newItem)
+    public void updateTask(task taskToUpdate, String newItem)
     {
         try {
             int queryTaskID;
@@ -230,7 +233,7 @@ public class databaseManager {
 
             String updateSelectionQuery = "SELECT " + task.TODO_COLUMN_ONE + ", " +
                     task.TODO_COLUMN_TWO + " FROM " +
-                    task.TODO_TABLE_NAME + "WHERE " +
+                    task.TODO_TABLE_NAME + " WHERE " +
                     task.TODO_COLUMN_ONE + "='" +
                     currentId + "';";
             Cursor updateCursor = readableDb.rawQuery(updateSelectionQuery, null);
@@ -243,17 +246,18 @@ public class databaseManager {
                         task.TODO_COLUMN_TWO+"='"+newItem+"' WHERE "+
                         task.TODO_COLUMN_ONE+"='"+queryTaskID+"';";
                 writableDb.execSQL(updateQuery);
-                return true;
+                taskToUpdate.setItem(newItem);
+                taskToUpdate.setUpdated(true);
             }
             else
             {
-                return false;
+                taskToUpdate.setUpdated(false);
             }
 
         }catch (SQLException e)
         {
             e.printStackTrace();
-            return false;
+            taskToUpdate.setUpdated(false);
         }
     }
 

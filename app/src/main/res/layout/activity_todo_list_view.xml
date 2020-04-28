@@ -42,8 +42,6 @@
         android:id="@+id/removeButton"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="163dp"
-        android:layout_marginLeft="163dp"
         android:layout_marginTop="388dp"
         android:layout_marginEnd="32dp"
         android:layout_marginRight="32dp"
@@ -51,22 +49,50 @@
         android:text="Remove"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/addButton"
-        app:layout_constraintTop_toBottomOf="@+id/todoLogo" />
+        app:layout_constraintTop_toBottomOf="@+id/todoLogo"
+        app:layout_constraintVertical_bias="0.536" />
 
-    <TextView
-        android:id="@+id/itemList"
-        android:layout_width="356dp"
-        android:layout_height="407dp"
-        android:layout_marginStart="31dp"
-        android:layout_marginLeft="31dp"
-        android:layout_marginTop="21dp"
-        android:layout_marginEnd="29dp"
-        android:layout_marginRight="29dp"
-        android:layout_marginBottom="25dp"
-        app:layout_constraintBottom_toTopOf="@+id/addButton"
-        app:layout_constraintEnd_toEndOf="parent"
+    <Button
+        android:id="@+id/updateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="412dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginBottom="16dp"
+        android:text="Update"
+        app:layout_constraintBottom_toBottomOf="@id/todoListRadio"
+        app:layout_constraintEnd_toStartOf="@+id/removeButton"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/addButton"
+        app:layout_constraintTop_toBottomOf="@+id/todoLogo"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <RadioGroup
+        android:id="@+id/todoListRadio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/updateButton"
+        app:layout_constraintTop_toBottomOf="@id/todoLogo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/todoLogo" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <!--  <LinearLayout
+          android:id="@+id/todoListLayout"
+          android:layout_width="407dp"
+          android:layout_height="417dp"
+          android:layout_marginTop="32dp"
+          android:layout_marginBottom="32dp"
+          android:orientation="vertical"
+          app:layout_constraintBottom_toTopOf="@+id/addButton"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/todoLogo"/>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

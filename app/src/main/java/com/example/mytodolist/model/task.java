@@ -1,9 +1,13 @@
 package com.example.mytodolist.model;
 
-public class task {
+import java.io.Serializable;
+
+public class task implements Serializable {
 
     private String item;
     private int id;
+    private boolean deleted=false;
+    private boolean updated=false;
 
 
     public static final String TODO_TABLE_NAME="todo";
@@ -25,5 +29,30 @@ public class task {
     public String  getItem()
     {
         return this.item;
+    }
+
+    public void setItem(String newItem)
+    {
+        this.item=newItem;
+    }
+
+    public boolean isDeleted()
+    {
+        return deleted;
+    }
+
+    public void setDeleted(boolean status)
+    {
+        this.deleted=status;
+    }
+
+    public boolean isUpdated()
+    {
+        return updated;
+    }
+
+    public void setUpdated(boolean status)
+    {
+        this.updated=status;
     }
 }

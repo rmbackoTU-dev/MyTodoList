@@ -1,25 +1,43 @@
 package com.example.mytodolist;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.Layout;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mytodolist.R;
 import com.example.mytodolist.IndividualTodoItemView;
 import com.example.mytodolist.model.databaseManager;
+import com.example.mytodolist.model.task;
+
+import java.util.ArrayList;
 
 import static com.example.mytodolist.DeleteActivity.ERROR_TEXT;
 
 public class todoListView extends AppCompatActivity {
 
     databaseManager manager;
+    public static final String TODO_OBJ="com.example.mytodolist.OBJECT";
+    private ArrayList<task> tasks;
+    private int taskLength=0;
+    private task currentSelectedItem=null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,13 +45,14 @@ public class todoListView extends AppCompatActivity {
         setContentView(R.layout.activity_todo_list_view);
         manager=new databaseManager(this);
         manager.open();
-
-        readInContents();
+        tasks=new ArrayList<task>();
+        getAllNewTask();
+        checkItems();
 
         Button addButton=findViewById(R.id.addButton);
         Button deleteButton=findViewById(R.id.removeButton);
-
-
+        final Button updateButton=findViewById(R.id.updateButton);
+        RadioGroup todoListGroup=findViewById(R.id.todoListRadio);
 
         Intent externalIntent=getIntent();
         if(externalIntent.getStringExtra(ERROR_TEXT) != null)
@@ -51,8 +70,30 @@ public class todoListView extends AppCompatActivity {
             }
         });
 
+        //This listener gathers which radio button is selected and uses that in order to complete
+        //delete or update activities
+        todoListGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int selectedId)
+            {
+                if( hasSelection(group)) {
+                    RadioButton selectedButton=findViewById(selectedId);
+                    currentSelectedItem=tasks.get(selectedButton.getId());
+                    updateButton.setEnabled(true);
+                    System.out.println(currentSelectedItem.getItem().toString());
+                }
+                else
+                {
+                    updateButton.setEnabled(false);
+                }
+
+            }
+        }
+        );
 
         deleteButton.setOnClickListener(new View.OnClickListener() {
+            //todo implement delete method in view using manager and currentSelection
             @Override
             public void onClick(View v) {
                 Intent deleteIntent= new Intent(v.getContext(), DeleteActivity.class);
@@ -60,39 +101,126 @@ public class todoListView extends AppCompatActivity {
                 startActivity(deleteIntent);
             }
         });
+
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent updateIntent=new Intent(v.getContext(), IndividualTodoItemView.class);
+                manager.close();
+                updateIntent.putExtra("UPDATE_SET", true);
+                updateIntent.putExtra(TODO_OBJ, currentSelectedItem);
+                startActivity(updateIntent);
+            }
+        });
     }
 
     @Override
-    protected  void onRestart()
+    protected  void onResume()
     {
-        super.onRestart();
-        readInContents();
+          super.onResume();
+          /*Still need to pull whole database better solution would grab only task not in list
+           maybe we could keep a counter*/
+          getAllNewTask();
+          checkItems();
+//        readInContents();
 
         // ensure we can navigate to the correct point in the back stack
         FragmentManager fm=this.getSupportFragmentManager();
         fm.popBackStack();
     }
 
-    private void readInContents()
+    /**
+     * Called by checkItems if a new task was added
+     */
+    private void updateList()
     {
-        TextView itemList=findViewById(R.id.itemList);
-        Cursor tableCursor=manager.getAllRows();
-        String currentString="";
-        String buildString="";
-        if(tableCursor.getCount() > 0 && tableCursor.moveToFirst())
+        ConstraintLayout mainLayout=findViewById(R.id.todoListView);
+        RadioGroup radioButtonsGroup=findViewById(R.id.todoListRadio);
+        task currentTask;
+        String currentTaskText;
+        for(int i=0; i<tasks.size(); i++)
         {
+            System.out.println("In the loop " +i);
+            currentTask=tasks.get(i);
+            currentTaskText=currentTask.getItem();
+            RadioButton newRadioButton=new RadioButton(this);
+            newRadioButton.setId(i);
+            newRadioButton.setText(currentTaskText);
 
-             while(!tableCursor.isAfterLast())
-            {
-                int itemIndex=tableCursor.getColumnIndex("item");
-                System.out.println(itemIndex);
-                currentString= tableCursor.getString(itemIndex);
-                buildString=currentString+"\n"+buildString;
-                tableCursor.moveToNext();
+            LinearLayout.LayoutParams checkParams=new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+            );
+            checkParams.setMargins(8,8,8,8);
+            checkParams.gravity= Gravity.CENTER;
+            radioButtonsGroup.addView(newRadioButton, i, checkParams);
+        }
+    }
 
+    /**
+     * Checks if new todoItems have been added to array
+     * or if previous ones have been updated or deleted
+     * updates UI if neccessary
+     */
+    public void checkItems()
+    {
+        if(taskLength == 0)
+        {
+            //check for first time items in database
+            updateList();
+            taskLength=tasks.size();
+            System.out.println("Run updateList");
+        }
+        else
+        {
+            for (int i = 0; i < tasks.size(); i++) {
+                task currentTask = tasks.get(i);
+                if (currentTask.isDeleted()) {
+                    tasks.remove(i);
+                }
+                if (currentTask.isUpdated()) {
+                    updateList();
+                }
+            }
+            if (taskLength < tasks.size()) {
+                updateList();
+                taskLength = tasks.size();
             }
         }
-        itemList.setText(buildString);
-
     }
+
+
+    public void getAllNewTask()
+    {
+        tasks=manager.getAllTask();
+        System.out.println("Run getAllTasks");
+    }
+
+
+    public static boolean hasSelection(RadioGroup group)
+    {
+        return (group.getCheckedRadioButtonId() != -1);
+    }
+
+//    private void readInContents()
+//    {
+//        TextView itemList=findViewById(R.id.itemList);
+//        Cursor tableCursor=manager.getAllRows();
+//        String currentString="";
+//        String buildString="";
+//        if(tableCursor.getCount() > 0 && tableCursor.moveToFirst())
+//        {
+//
+//             while(!tableCursor.isAfterLast())
+//            {
+//                int itemIndex=tableCursor.getColumnIndex("item");
+//                System.out.println(itemIndex);
+//                currentString= tableCursor.getString(itemIndex);
+//                buildString=currentString+"\n"+buildString;
+//                tableCursor.moveToNext();
+//
+//            }
+//        }
+//        itemList.setText(buildString);
+//
+//    }
 }
