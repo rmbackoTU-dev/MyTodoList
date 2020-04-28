@@ -8,6 +8,7 @@ public class task implements Serializable {
     private int id;
     private boolean deleted=false;
     private boolean updated=false;
+    private boolean displayed=false;
 
 
     public static final String TODO_TABLE_NAME="todo";
@@ -54,5 +55,14 @@ public class task implements Serializable {
     public void setUpdated(boolean status)
     {
         this.updated=status;
+    }
+
+    public boolean isDisplayed() {
+        return displayed;
+    }
+
+    public void setDisplayed(boolean displayed)
+    {
+        this.displayed=displayed;
     }
 }

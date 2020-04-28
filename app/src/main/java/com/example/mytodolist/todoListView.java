@@ -28,7 +28,6 @@ import com.example.mytodolist.model.task;
 
 import java.util.ArrayList;
 
-import static com.example.mytodolist.DeleteActivity.ERROR_TEXT;
 
 public class todoListView extends AppCompatActivity {
 
@@ -54,17 +53,13 @@ public class todoListView extends AppCompatActivity {
         final Button updateButton=findViewById(R.id.updateButton);
         RadioGroup todoListGroup=findViewById(R.id.todoListRadio);
 
-        Intent externalIntent=getIntent();
-        if(externalIntent.getStringExtra(ERROR_TEXT) != null)
-        {
-            System.err.println(externalIntent.getStringExtra(ERROR_TEXT));
-        }
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent addIntent= new Intent(v.getContext(), IndividualTodoItemView.class);
                 manager.close();
+                addIntent.putExtra("UPDATE_SET", false);
                 startActivity(addIntent);
 
             }
@@ -93,12 +88,10 @@ public class todoListView extends AppCompatActivity {
         );
 
         deleteButton.setOnClickListener(new View.OnClickListener() {
-            //todo implement delete method in view using manager and currentSelection
             @Override
             public void onClick(View v) {
-                Intent deleteIntent= new Intent(v.getContext(), DeleteActivity.class);
-                manager.close();
-                startActivity(deleteIntent);
+                manager.deleteTask(currentSelectedItem);
+                checkItems();
             }
         });
 
@@ -134,25 +127,35 @@ public class todoListView extends AppCompatActivity {
      */
     private void updateList()
     {
-        ConstraintLayout mainLayout=findViewById(R.id.todoListView);
         RadioGroup radioButtonsGroup=findViewById(R.id.todoListRadio);
         task currentTask;
         String currentTaskText;
-        for(int i=0; i<tasks.size(); i++)
-        {
-            System.out.println("In the loop " +i);
-            currentTask=tasks.get(i);
-            currentTaskText=currentTask.getItem();
-            RadioButton newRadioButton=new RadioButton(this);
-            newRadioButton.setId(i);
-            newRadioButton.setText(currentTaskText);
+        for(int i=0; i<tasks.size(); i++) {
+            System.out.println("In the loop " + i);
+            currentTask = tasks.get(i);
+            if(currentTask.isDeleted()){
+                radioButtonsGroup.removeView(radioButtonsGroup.getChildAt(i));
+                //resetRadioButtonIds
+                for(int j=i; j<tasks.size(); j++)
+                {
+                    //move the id back one to fill the spot for the missing
+                    //radioButton
+                    radioButtonsGroup.getChildAt(j).setId(j-1);
+                }
 
-            LinearLayout.LayoutParams checkParams=new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-            );
-            checkParams.setMargins(8,8,8,8);
-            checkParams.gravity= Gravity.CENTER;
-            radioButtonsGroup.addView(newRadioButton, i, checkParams);
+            }
+            else if (!(currentTask.isDisplayed())) {
+                currentTaskText = currentTask.getItem();
+                RadioButton newRadioButton = new RadioButton(this);
+                newRadioButton.setId(i);
+                newRadioButton.setText(currentTaskText);
+                LinearLayout.LayoutParams checkParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                checkParams.setMargins(8, 8, 8, 8);
+                checkParams.gravity = Gravity.CENTER;
+                radioButtonsGroup.addView(newRadioButton, i, checkParams);
+                tasks.get(i).setDisplayed(true);
+            }
         }
     }
 
@@ -175,7 +178,9 @@ public class todoListView extends AppCompatActivity {
             for (int i = 0; i < tasks.size(); i++) {
                 task currentTask = tasks.get(i);
                 if (currentTask.isDeleted()) {
+                    updateList();
                     tasks.remove(i);
+                    System.out.println("Update item deletion occured");
                 }
                 if (currentTask.isUpdated()) {
                     updateList();
