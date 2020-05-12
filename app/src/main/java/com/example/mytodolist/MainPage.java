@@ -1,6 +1,7 @@
 package com.example.mytodolist;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,7 +24,6 @@ public class MainPage extends AppCompatActivity {
         EditText nameField=findViewById(R.id.nameField);
         final TextView greeting=findViewById(R.id.greeting);
         Button viewListButton=findViewById(R.id.viewListButton);
-
 
         TextWatcher nameWatcher=new TextWatcher() {
             @Override

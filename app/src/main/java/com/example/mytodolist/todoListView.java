@@ -45,13 +45,16 @@ public class todoListView extends AppCompatActivity {
         manager=new databaseManager(this);
         manager.open();
         tasks=new ArrayList<task>();
+        System.out.println("Running on create");
         getAllNewTask();
-        checkItems();
 
         Button addButton=findViewById(R.id.addButton);
-        Button deleteButton=findViewById(R.id.removeButton);
+        final Button deleteButton=findViewById(R.id.removeButton);
         final Button updateButton=findViewById(R.id.updateButton);
         RadioGroup todoListGroup=findViewById(R.id.todoListRadio);
+
+        updateButton.setEnabled(false);
+        deleteButton.setEnabled(false);
 
 
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -59,7 +62,7 @@ public class todoListView extends AppCompatActivity {
             public void onClick(View v) {
                 Intent addIntent= new Intent(v.getContext(), IndividualTodoItemView.class);
                 manager.close();
-                addIntent.putExtra("UPDATE_SET", false);
+                addIntent.putExtra("UPDATE_SET ", false);
                 startActivity(addIntent);
 
             }
@@ -76,11 +79,13 @@ public class todoListView extends AppCompatActivity {
                     RadioButton selectedButton=findViewById(selectedId);
                     currentSelectedItem=tasks.get(selectedButton.getId());
                     updateButton.setEnabled(true);
+                    deleteButton.setEnabled(true);
                     System.out.println(currentSelectedItem.getItem().toString());
                 }
                 else
                 {
                     updateButton.setEnabled(false);
+                    deleteButton.setEnabled(false);
                 }
 
             }
@@ -91,7 +96,7 @@ public class todoListView extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 manager.deleteTask(currentSelectedItem);
-                checkItems();
+                getAllNewTask();
             }
         });
 
@@ -100,7 +105,7 @@ public class todoListView extends AppCompatActivity {
             public void onClick(View v) {
                 Intent updateIntent=new Intent(v.getContext(), IndividualTodoItemView.class);
                 manager.close();
-                updateIntent.putExtra("UPDATE_SET", true);
+                updateIntent.putExtra("UPDATE_SET ", true);
                 updateIntent.putExtra(TODO_OBJ, currentSelectedItem);
                 startActivity(updateIntent);
             }
@@ -110,11 +115,12 @@ public class todoListView extends AppCompatActivity {
     @Override
     protected  void onResume()
     {
+
           super.onResume();
+//          clearUIRadioList();
           /*Still need to pull whole database better solution would grab only task not in list
            maybe we could keep a counter*/
           getAllNewTask();
-          checkItems();
 //        readInContents();
 
         // ensure we can navigate to the correct point in the back stack
@@ -123,81 +129,167 @@ public class todoListView extends AppCompatActivity {
     }
 
     /**
-     * Called by checkItems if a new task was added
+     * Called by getAllNewTasks to update items that have been modified
+     * in the interface
      */
-    private void updateList()
+    private void updateList(ArrayList<task> updateList)
     {
         RadioGroup radioButtonsGroup=findViewById(R.id.todoListRadio);
         task currentTask;
-        String currentTaskText;
-        for(int i=0; i<tasks.size(); i++) {
-            System.out.println("In the loop " + i);
-            currentTask = tasks.get(i);
-            if(currentTask.isDeleted()){
-                radioButtonsGroup.removeView(radioButtonsGroup.getChildAt(i));
-                //resetRadioButtonIds
-                for(int j=i; j<tasks.size(); j++)
-                {
-                    //move the id back one to fill the spot for the missing
-                    //radioButton
-                    radioButtonsGroup.getChildAt(j).setId(j-1);
-                }
-
-            }
-            else if (!(currentTask.isDisplayed())) {
-                currentTaskText = currentTask.getItem();
-                RadioButton newRadioButton = new RadioButton(this);
-                newRadioButton.setId(i);
-                newRadioButton.setText(currentTaskText);
-                LinearLayout.LayoutParams checkParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                checkParams.setMargins(8, 8, 8, 8);
-                checkParams.gravity = Gravity.CENTER;
-                radioButtonsGroup.addView(newRadioButton, i, checkParams);
-                tasks.get(i).setDisplayed(true);
-            }
+        RadioButton updateButton;
+        for(int i=0; i<updateList.size(); i++)
+        {
+            currentTask=updateList.get(i);
+            updateButton=(RadioButton) radioButtonsGroup.getChildAt(currentTask.getId());
+            //update text to new text
+            updateButton.setText(currentTask.getItem());
         }
     }
 
     /**
-     * Checks if new todoItems have been added to array
-     * or if previous ones have been updated or deleted
-     * updates UI if neccessary
+     * Called by getAllNewTasks to add items to the interface
+     * initially
+     * @param tasksToAdd
      */
-    public void checkItems()
+    private void addToList(ArrayList<task> tasksToAdd)
     {
-        if(taskLength == 0)
+        RadioGroup currentRadioGroup=findViewById(R.id.todoListRadio);
+        RadioButton newButton;
+        task currentTask;
+        for(int i=0; i<tasksToAdd.size(); i++)
         {
-            //check for first time items in database
-            updateList();
-            taskLength=tasks.size();
-            System.out.println("Run updateList");
+            currentTask=tasksToAdd.get(i);
+            newButton=new RadioButton(this);
+            newButton.setId(currentTask.getId()-1);
+            newButton.setText(currentTask.getItem());
+            currentRadioGroup.addView(newButton);
         }
-        else
+
+    }
+
+    /**
+     * Called by getAllNewTasks to remove items which have been deleted
+     * from the interface
+     * @param tasksToDelete
+     */
+    private void deleteFromList(ArrayList<task> tasksToDelete)
+    {
+        RadioGroup currentRadioGroup=findViewById(R.id.todoListRadio);
+        task currentTask;
+        RadioButton removeButton;
+        for(int i=0; i<tasksToDelete.size(); i++)
         {
-            for (int i = 0; i < tasks.size(); i++) {
-                task currentTask = tasks.get(i);
-                if (currentTask.isDeleted()) {
-                    updateList();
-                    tasks.remove(i);
-                    System.out.println("Update item deletion occured");
-                }
-                if (currentTask.isUpdated()) {
-                    updateList();
-                }
-            }
-            if (taskLength < tasks.size()) {
-                updateList();
-                taskLength = tasks.size();
-            }
+            currentTask=tasksToDelete.get(i);
+            removeButton=(RadioButton) currentRadioGroup.getChildAt(
+                    currentTask.getId());
+            currentRadioGroup.removeView(removeButton);
         }
     }
 
-
+    /**
+     *updates the activities global tasks list and calls check Items
+     * to update the user interface
+     */
     public void getAllNewTask()
     {
-        tasks=manager.getAllTask();
-        System.out.println("Run getAllTasks");
+        ArrayList<task> taskList=manager.getAllTask();
+        ArrayList<task> updatedList=new ArrayList<task>();
+        ArrayList<task> removeList=new ArrayList<task>();
+
+
+        task currentTask;
+        for(int i=0; i< taskList.size(); i++)
+        {
+            currentTask=taskList.get(i);
+            System.out.println("Current Task is : "+currentTask.getItem());
+            /**add task to updated list if the task
+            *has recently been updated
+             * due to a modification occurring the task can be removed
+             * from the task list which would be for new tasks
+             * that are added to the interface
+             **/
+            System.out.println("Task id: "+currentTask.getId()+" Current Item: "+currentTask.getItem()+
+                    " is updated: "+currentTask.isUpdated());
+            if(currentTask.isUpdated())
+            {
+                updatedList.add(currentTask);
+                //remove the task currently stored in tasks at the task id
+                //replace with the new task with the same id
+                tasks.remove(currentTask.getId());
+                tasks.add(currentTask.getId()-1, currentTask);
+                taskList.remove(currentTask);
+            }
+            /** add task to remove list if the task
+             * has recently been deleted
+             * due to a modification occurring the task can be
+             * removed from the task list which would be for new tasks
+             * that are added to the interface
+             */
+            System.out.println("Task id "+currentTask.getId()+" is deleted: " +
+                    currentTask.isDeleted());
+
+            if(currentTask.isDeleted());
+            {
+                System.out.println("Entered add to remove list");
+                removeList.add(currentTask);
+                tasks.remove(currentTask);
+                taskList.remove(currentTask);
+            }
+
+            System.out.println("Remove list is empty : "+removeList.isEmpty());
+            /**
+             * remove tasks from tasks list that have already
+             * been displayed on the interface and have not
+             * had any changes
+             */
+            if(currentTask.isDisplayed())
+            {
+                taskList.remove(currentTask);
+            }
+        }
+
+        System.out.println("Remove list is empty 2: "+removeList.isEmpty());
+
+        if(taskList.isEmpty() && updatedList.isEmpty() && removeList.isEmpty())
+        {
+            System.out.println("No changes have occurred");
+        }
+        else {
+            //Perform all of the interface update tasks
+            if (!taskList.isEmpty()) {
+                System.out.println("Not EMPTY new items ");
+                //ensure any new tasks are addded to the task list using their
+                //id
+                task newTask;
+                for(int j=0; j<taskList.size(); j++)
+                {
+                    newTask=taskList.get(j);
+                    System.out.println("Adding the task with id "
+                    +(newTask.getId()-1));
+                    tasks.add(newTask.getId()-1, newTask);
+                }
+                //perform addition to interface
+                addToList(taskList);
+            }
+
+            if (!updatedList.isEmpty()) {
+                 updateList(updatedList);
+                 System.out.println("Not EMPTY update items");
+            }
+
+            if (!removeList.isEmpty()) {
+                System.out.println("NOT EMPTY deleted items");
+                task removeItem;
+                for(int k=0; k<removeList.size(); k++)
+                {
+                    removeItem=removeList.get(k);
+                    System.out.println("Removing: "+removeItem.getId()+": "+
+                            removeItem.getItem());
+                }
+                deleteFromList(removeList);
+
+            }
+        }
     }
 
 
@@ -206,26 +298,18 @@ public class todoListView extends AppCompatActivity {
         return (group.getCheckedRadioButtonId() != -1);
     }
 
-//    private void readInContents()
+//    public void  clearUIRadioList()
 //    {
-//        TextView itemList=findViewById(R.id.itemList);
-//        Cursor tableCursor=manager.getAllRows();
-//        String currentString="";
-//        String buildString="";
-//        if(tableCursor.getCount() > 0 && tableCursor.moveToFirst())
+//        RadioGroup currentRadioGroup=findViewById(R.id.todoListRadio);
+//        if(currentRadioGroup.getChildCount() != 0)
 //        {
-//
-//             while(!tableCursor.isAfterLast())
+//            int radioGroupLength=currentRadioGroup.getChildCount();
+//            RadioButton currentButton;
+//            for(int i=0; i< radioGroupLength; i++ )
 //            {
-//                int itemIndex=tableCursor.getColumnIndex("item");
-//                System.out.println(itemIndex);
-//                currentString= tableCursor.getString(itemIndex);
-//                buildString=currentString+"\n"+buildString;
-//                tableCursor.moveToNext();
-//
+//                currentButton=(RadioButton) currentRadioGroup.getChildAt(i);
+//                currentRadioGroup.removeView(currentButton);
 //            }
 //        }
-//        itemList.setText(buildString);
-//
 //    }
 }

@@ -40,7 +40,6 @@ public class databaseManager {
             idCursor.moveToLast();
             id=idCursor.getInt(idCursor.getColumnIndex("id"))+1;
         }
-        System.out.println("Count:  "+idCursor.getCount());
         ContentValues val=new ContentValues();
         val.put(task.TODO_COLUMN_ONE,  id);
         val.put(task.TODO_COLUMN_TWO, value);
@@ -173,11 +172,11 @@ public class databaseManager {
             {
                 taskId=newCursor.getInt(
                         newCursor.getColumnIndex("id"));
-                System.out.println("id: "+taskId);
+ //               System.out.println("id: "+taskId);
                 taskItem=newCursor.getString(
                         newCursor.getColumnIndex("item")
                 );
-                System.out.println("item: "+taskItem);
+ //               System.out.println("item: "+taskItem);
                 task newTodo=new task(taskItem, taskId);
                 listOfTasks.add(newTodo);
                 newCursor.moveToNext();

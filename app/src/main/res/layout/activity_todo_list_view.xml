@@ -83,16 +83,5 @@
         app:layout_constraintVertical_bias="0.0"
         tools:layout_editor_absoluteX="0dp" />
 
-    <!--  <LinearLayout
-          android:id="@+id/todoListLayout"
-          android:layout_width="407dp"
-          android:layout_height="417dp"
-          android:layout_marginTop="32dp"
-          android:layout_marginBottom="32dp"
-          android:orientation="vertical"
-          app:layout_constraintBottom_toTopOf="@+id/addButton"
-          app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toBottomOf="@+id/todoLogo"/>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
