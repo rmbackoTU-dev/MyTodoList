@@ -16,6 +16,7 @@ import com.example.mytodolist.todoListView;
 
 public class MainPage extends AppCompatActivity {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

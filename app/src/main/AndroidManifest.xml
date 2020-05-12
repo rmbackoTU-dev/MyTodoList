@@ -11,20 +11,23 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".IndividualTodoItemView"
-            android:parentActivityName=".todoListView">
+            android:parentActivityName=".todoListView"
+            >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".todoListView" />
         </activity>
         <activity
             android:name=".todoListView"
-            android:parentActivityName=".todoListView" />
-
+            android:parentActivityName=".todoListView"
+            android:launchMode="singleTop"
+            >
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
             android:value=".MainPage" />
-
-        <activity android:name=".MainPage">
+        </activity>
+        <activity android:name=".MainPage"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -32,5 +35,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

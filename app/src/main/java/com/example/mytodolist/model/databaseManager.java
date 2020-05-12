@@ -206,6 +206,7 @@ public class databaseManager {
             String[] selectionArgs = {new Integer(currentId).toString()};
             //Issue SQL statement.
             int deletedRows = writableDb.delete(task.TODO_TABLE_NAME, selection, selectionArgs);
+            System.out.println("Deleteing task with id "+taskToRemove.getId());
             taskToRemove.setDeleted(true);
         }catch(SQLException e)
         {
@@ -257,6 +258,41 @@ public class databaseManager {
         {
             e.printStackTrace();
             taskToUpdate.setUpdated(false);
+        }
+    }
+
+    public void updateTaskID(task taskToUpdate, int newID)
+    {
+        try {
+            int queryTaskID;
+            String queryTaskItem;
+            int currentId = taskToUpdate.getId();
+            System.out.println("Updating id "+currentId+" to "+newID);
+            String currentItem = taskToUpdate.getItem();
+            ContentValues updateValues = new ContentValues();
+            updateValues.put(task.TODO_COLUMN_ONE, currentId);
+            updateValues.put(task.TODO_COLUMN_TWO, currentItem);
+            String updateSelectionQuery = "SELECT " + task.TODO_COLUMN_ONE + ", " +
+                    task.TODO_COLUMN_TWO + " FROM " +
+                    task.TODO_TABLE_NAME + " WHERE " +
+                    task.TODO_COLUMN_ONE + "='" +
+                    currentId + "';";
+            Cursor updateCursor = readableDb.rawQuery(updateSelectionQuery, null);
+
+            if (updateCursor.moveToFirst() && updateCursor.getCount() > 0) {
+
+                queryTaskItem=updateCursor.getString(
+                        updateCursor.getColumnIndex("item"));
+                String updateQuery="UPDATE "+ task.TODO_TABLE_NAME+ " SET "+
+                        task.TODO_COLUMN_ONE+"='"+newID+"' WHERE "+
+                        task.TODO_COLUMN_TWO+"='"+queryTaskItem+"';";
+                writableDb.execSQL(updateQuery);
+                taskToUpdate.setId(newID);
+                //do not set update because content was not modified
+            }
+        }catch (SQLException e)
+        {
+            e.printStackTrace();
         }
     }
 

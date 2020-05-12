@@ -11,7 +11,7 @@ public class databaseHelper extends SQLiteOpenHelper {
     private static String databaseName="todoDatabase";
     private static final String TODO_TABLE_CREATE="CREATE TABLE " + task.TODO_TABLE_NAME+ "("+
             task.TODO_COLUMN_ONE+" "+ task.TODO_COLUMN_ONE_TYPE+", "+ task.TODO_COLUMN_TWO+" "+
-            task.TODO_COLUM_TWO_TYPE+");";
+            task.TODO_COLUMN_TWO_TYPE +");";
 
     public static final String TODO_TABLE_DELETE="DROP TABLE IF EXISTS "+ task.TODO_TABLE_NAME;
 

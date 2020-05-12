@@ -19,7 +19,9 @@ import com.example.mytodolist.model.task;
 
 public class IndividualTodoItemView extends AppCompatActivity {
 
+
     databaseManager manager;
+    public static final int ADD_UPDATE_VIEW_REPONSE_CODE=2;
     private boolean updateSet=false;
     private task updateTask;
 
@@ -36,7 +38,7 @@ public class IndividualTodoItemView extends AppCompatActivity {
 
         Intent updateIntent=getIntent();
         updateSet=updateIntent.getExtras().getBoolean("UPDATE_SET");
-        System.out.println("UPDATE IS SET TO"+updateSet);
+        System.out.println("UPDATE IS SET TO "+updateSet);
         if(updateSet)
         {
             updateTask=(task) updateIntent.getSerializableExtra(todoListView.TODO_OBJ);
@@ -65,6 +67,7 @@ public class IndividualTodoItemView extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent returnToList=new Intent(v.getContext(), todoListView.class);
+                returnToList.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 if(updateSet)
                 {
                     updateItemInDatabase(updateTask, getItemText());
@@ -95,7 +98,10 @@ public class IndividualTodoItemView extends AppCompatActivity {
                  int itemIndex=itemCursor.getColumnIndex("item");
                 String textFound=itemCursor.getString(itemIndex);
                 System.out.println(textFound);
-                success=(itemCursor.getCount() >1);
+                int itemNum=itemCursor.getCount();
+                System.out.println("The items returned by the add to database query is "+
+                        itemNum);
+                success=(itemNum>0);
             }
         }
         catch (SQLException e)
