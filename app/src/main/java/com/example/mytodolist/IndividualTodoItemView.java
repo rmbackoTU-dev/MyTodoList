@@ -23,6 +23,7 @@ public class IndividualTodoItemView extends AppCompatActivity {
     databaseManager manager;
     private boolean updateSet=false;
     private task updateTask;
+    public static final String TASK_UPDATE_INDEX="com.example.mytodolist.INTEGER";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +72,8 @@ public class IndividualTodoItemView extends AppCompatActivity {
                 if(updateSet)
                 {
                     updateItemInDatabase(updateTask, getItemText());
-
+                    returnToList.putExtra("UPDATE_RECORD_SET", true);
+                    returnToList.putExtra(TASK_UPDATE_INDEX, updateTask.getId());
                 }
                 else
                 {
@@ -80,6 +82,7 @@ public class IndividualTodoItemView extends AppCompatActivity {
                     } else {
                         System.out.println("Fail");
                     }
+                    returnToList.putExtra("UPDATE_RECORD_SET", false);
                 }
                 startActivity(returnToList);
             }

@@ -33,10 +33,11 @@ public class todoListView extends AppCompatActivity {
 
     databaseManager manager;
     public static final String TODO_OBJ="com.example.mytodolist.OBJECT";
-    public static final int TODO_LIST_RESPONSE_CODE=1;
     private ArrayList<task> tasks;
     private int taskLength=0;
     private task currentSelectedItem=null;
+    private Bundle currentExtras;
+
 
 
     @Override
@@ -63,7 +64,7 @@ public class todoListView extends AppCompatActivity {
             public void onClick(View v) {
                 Intent addIntent= new Intent(v.getContext(), IndividualTodoItemView.class);
                 manager.close();
-                addIntent.putExtra("UPDATE_SET", true);
+                addIntent.putExtra("UPDATE_SET", false);
                 startActivity(addIntent);
 
             }
@@ -114,15 +115,45 @@ public class todoListView extends AppCompatActivity {
         });
     }
 
+    /**
+     * Used to ensure when a new intent is used to launch the
+     * activity the intent is updated with the current extras values
+     * @param newIntent
+     */
+    @Override
+    protected  void onNewIntent(Intent newIntent)
+    {
+        super.onNewIntent(newIntent);
+        //getting the extras from the new Intent
+        currentExtras=newIntent.getExtras();
+    }
+
     @Override
     protected  void onRestart()
     {
 
           super.onRestart();
+          boolean updateRecordSet=false;
+          int indexToSet=-1;
           /*Still need to pull whole database better solution would grab only task not in list
            maybe we could keep a counter*/
+          updateRecordSet=currentExtras.getBoolean("UPDATE_RECORD_SET");
           System.out.println("Running on Restart");
           manager.open();
+          task updateTask;
+          /**After we recieve a intent back from the IndividualTodoItemView that a record was updated
+          *get the index of the updated record and replace it in our tasks with a task listed with a
+          *isListed **/
+          if(updateRecordSet)
+          {
+              System.out.println("Running code to update task");
+              indexToSet=currentExtras.getInt(IndividualTodoItemView.TASK_UPDATE_INDEX);
+              System.out.println("Index to update is set to "+indexToSet);
+              updateTask=tasks.get(indexToSet);
+              updateTask.setUpdated(true);
+              tasks.remove(indexToSet);
+              tasks.add(indexToSet, updateTask);
+          }
           getAllNewTask();
 
 
@@ -293,7 +324,7 @@ public class todoListView extends AppCompatActivity {
      * @param taskList
      * @return
      */
-    public ArrayList<task> setDisplayed(ArrayList<task> taskList)
+    public ArrayList<task> setDisplayedAndUpdated(ArrayList<task> taskList)
     {
         task currentTask;
         ArrayList newTaskList=new ArrayList<task>();
@@ -307,6 +338,7 @@ public class todoListView extends AppCompatActivity {
             {
                 globalCurrentTask=tasks.get(currentTaskid);
                 currentTask.setDisplayed(globalCurrentTask.isDisplayed());
+                currentTask.setUpdated(globalCurrentTask.isUpdated());
             }
             //add the newly displayed task to the task list
             newTaskList.add(currentTask);
@@ -327,7 +359,7 @@ public class todoListView extends AppCompatActivity {
         ArrayList<task> additionList=new ArrayList<task>();
 
         //check which tasks are displayed first
-        taskList=setDisplayed(taskList);
+        taskList=setDisplayedAndUpdated(taskList);
 
         for(int h=0; h<taskList.size(); h++)
         {
