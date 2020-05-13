@@ -63,7 +63,7 @@ public class todoListView extends AppCompatActivity {
             public void onClick(View v) {
                 Intent addIntent= new Intent(v.getContext(), IndividualTodoItemView.class);
                 manager.close();
-                addIntent.putExtra("UPDATE_SET ", false);
+                addIntent.putExtra("UPDATE_SET", true);
                 startActivity(addIntent);
 
             }
@@ -96,7 +96,8 @@ public class todoListView extends AppCompatActivity {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                removeTaskAndDecrementIDs(currentSelectedItem.getId());
+                System.out.println("Deleting item "+currentSelectedItem.getItem());
+                removeTaskFromDatabaseAndUI(currentSelectedItem);
                 taskLength=taskLength-1;
             }
         });
@@ -106,7 +107,7 @@ public class todoListView extends AppCompatActivity {
             public void onClick(View v) {
                 Intent updateIntent=new Intent(v.getContext(), IndividualTodoItemView.class);
                 manager.close();
-                updateIntent.putExtra("UPDATE_SET ", true);
+                updateIntent.putExtra("UPDATE_SET", true);
                 updateIntent.putExtra(TODO_OBJ, currentSelectedItem);
                 startActivity(updateIntent);
             }
@@ -124,7 +125,7 @@ public class todoListView extends AppCompatActivity {
           manager.open();
           getAllNewTask();
 
-          
+
           task globalTask;
           for(int i=0; i<tasks.size(); i++)
           {
@@ -140,40 +141,105 @@ public class todoListView extends AppCompatActivity {
 
     /**
      * Delete a task from the database
-     * then decrement the ids so that the
-     * ids in the database match what is
-     * in the RadioGroup
+     * then the UI
      */
-    public void removeTaskAndDecrementIDs(int idToRemove){
-        RadioGroup radioButtonGroup=findViewById(R.id.todoListRadio);
+    public void removeTaskFromDatabaseAndUI(task taskToRemove){
+        //deleting the task should set it as isDeleted
+        task removedTask=manager.deleteTask(taskToRemove);
+        int removedID=removedTask.getId();
 
-        RadioButton currentRadioButton;
+        //replace the new task with isDeleted in place of the
+        //old task without is deleted
+        tasks.remove(removedTask);
+        tasks.add(removedID, removedTask);
+        removeDeletedTaskFromUI();
+    }
+
+    /**
+     * iterates through tasks and removes any task marked as isDeleted
+     * from the radioGroup
+     */
+    public void removeDeletedTaskFromUI()
+    {
         task currentTask;
-        int newId;
-        currentTask=tasks.get(idToRemove);
-        manager.deleteTask(currentTask);
-        if(currentTask.isDeleted()){
-            tasks.remove(currentTask.getId());
-            //remove the current task from the interface
-            currentRadioButton=(RadioButton) radioButtonGroup.getChildAt(idToRemove);
-            System.out.println("Button Text "+currentRadioButton.getText());
-            radioButtonGroup.removeView(currentRadioButton);
-            //decrement the rest of the ids
-            int radioButtons = radioButtonGroup.getChildCount();
-            for (int i = idToRemove; i < radioButtons; i++) {
-                System.out.println("Setting new id " + i);
-                newId = i - 1;
-                currentRadioButton = (RadioButton) radioButtonGroup.getChildAt(i);
-                currentRadioButton.setId(newId);
-                currentTask = tasks.get(i);
-                manager.updateTaskID(currentTask, newId);
+        int isDeletedIndex=0;
+        for(int m=0; m< tasks.size(); m++)
+        {
+            currentTask=tasks.get(m);
+            if(currentTask.isDeleted())
+            {
+                isDeletedIndex=m;
             }
         }
-        else
+        /**Assume m is the first found deleted task
+        *all task after M should be removed from the radio group
+        *on a second traversal of task only task that have not been deleted
+        *should be added back to the radio group
+         * if nothing is deleted
+         * everything is added back to UI safely**/
+        RadioGroup currentRadioGroup=findViewById(R.id.todoListRadio);
+        int radioButtonCount=currentRadioGroup.getChildCount();
+        RadioButton currentRadioButton;
+        int isAddedIndex=isDeletedIndex;
+        int oldRadioButtonCount;
+        while(isDeletedIndex < radioButtonCount)
         {
-            System.err.println("Unable to delete task "+currentTask.getId());
+            oldRadioButtonCount=radioButtonCount;
+            currentRadioButton=(RadioButton) currentRadioGroup.getChildAt(isDeletedIndex);
+            currentRadioGroup.removeView(currentRadioButton);
+            /**radio Button count will decrease as items are removed meaning items
+             * in index 2 will take the space of index 1 creating looping
+             *without incrementing. To end the loop however isDeletedIndex
+             * must be updated When radioCount=isDeletedIndex+1
+             * more traditional would be a while loop with a boolean sentinal,
+             * but this works for now.
+            **/
+            if(isDeletedIndex+1 <  oldRadioButtonCount)
+            {
+                radioButtonCount=currentRadioGroup.getChildCount();
+            }
+            else
+            {
+                //end loop by incrementing isDeletedIndex
+                isDeletedIndex=isDeletedIndex+1;
+            }
+            System.out.println("New RadioButton Count "+radioButtonCount);
+
         }
 
+        int newTaskId=isAddedIndex;
+        RadioButton newRadioButton;
+        ArrayList<task> displayedTasks=new ArrayList<task>();
+        for(int n=isAddedIndex; n< tasks.size(); n++)
+        {
+            currentTask=tasks.get(n);
+            if(!currentTask.isDeleted())
+            {
+                newRadioButton = new RadioButton(this);
+                newRadioButton.setId(isAddedIndex);
+                newRadioButton.setText(currentTask.getItem());
+                currentRadioGroup.addView(newRadioButton);
+                currentTask.setDisplayed(true);
+                displayedTasks.add(currentTask);
+            }
+        }
+
+        //run third loop to properly add back in all displayed tasks in to activity task list
+        task currentDisplayedTask;
+        int startOfNewlyAddedTasks=newTaskId;
+        for(int o=0; o<displayedTasks.size(); o++)
+        {
+            currentDisplayedTask = displayedTasks.get(o);
+            tasks.remove(newTaskId);
+            tasks.add(newTaskId, currentDisplayedTask);
+            newTaskId=newTaskId+1;
+        }
+        /**any tasks left over on tasks at positions greater than newTaskID+displayedTasks.size()
+        should be able to safely be removed from tasks**/
+        for(int p=startOfNewlyAddedTasks; p<tasks.size(); p++)
+        {
+            tasks.remove(p);
+        }
     }
 
 
@@ -210,7 +276,7 @@ public class todoListView extends AppCompatActivity {
         {
             currentTask=tasksToAdd.get(i);
             newButton=new RadioButton(this);
-            newButton.setId(currentTask.getId()-1);
+            newButton.setId(currentTask.getId());
             newButton.setText(currentTask.getItem());
             currentRadioGroup.addView(newButton);
             currentTask.setDisplayed(true);
@@ -220,24 +286,6 @@ public class todoListView extends AppCompatActivity {
 
     }
 
-    /**
-     * Called by getAllNewTasks to remove items which have been deleted
-     * from the interface
-     * @param tasksToDelete
-     */
-    private void deleteFromList(ArrayList<task> tasksToDelete)
-    {
-        RadioGroup currentRadioGroup=findViewById(R.id.todoListRadio);
-        task currentTask;
-        RadioButton removeButton;
-        for(int i=0; i<tasksToDelete.size(); i++)
-        {
-            currentTask=tasksToDelete.get(i);
-            removeButton=(RadioButton) currentRadioGroup.getChildAt(
-                    currentTask.getId());
-            currentRadioGroup.removeView(removeButton);
-        }
-    }
 
     /**
      * Sets the isDisplay on task list to match the is displayed
@@ -323,18 +371,6 @@ public class todoListView extends AppCompatActivity {
                 tasks.add(currentTask.getId()-1, currentTask);
                 taskLength=tasks.size();
             }
-//            /** add task to remove list if the task
-//             * has recently been deleted
-//             * due to a modification occurring the task can be
-//             * removed from the task list which would be for new tasks
-//             * that are added to the interface
-//             */
-//            if(currentTask.isDeleted())
-//            {
-//                removeList.add(currentTask);
-//                tasks.remove(currentTask);
-//            }
-
         }
 
         //Perform all of the interface update tasks
@@ -353,7 +389,8 @@ public class todoListView extends AppCompatActivity {
 
             //add the displayed tasks to tasks so that they are not added again
             task currentDisplayedTask;
-            for(int l=0; l< displayedTaskList.size(); l++)
+
+            for(int l=0; l< additionList.size(); l++)
             {
                 currentDisplayedTask=displayedTaskList.get(l);
                 tasks.add(currentDisplayedTask.getId(), currentDisplayedTask);

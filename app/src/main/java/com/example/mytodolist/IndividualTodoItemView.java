@@ -21,7 +21,6 @@ public class IndividualTodoItemView extends AppCompatActivity {
 
 
     databaseManager manager;
-    public static final int ADD_UPDATE_VIEW_REPONSE_CODE=2;
     private boolean updateSet=false;
     private task updateTask;
 
@@ -36,6 +35,7 @@ public class IndividualTodoItemView extends AppCompatActivity {
         final Button addToList=findViewById(R.id.addToList);
         addToList.setEnabled(false);
 
+        System.out.println("Checking update intent");
         Intent updateIntent=getIntent();
         updateSet=updateIntent.getExtras().getBoolean("UPDATE_SET");
         System.out.println("UPDATE IS SET TO "+updateSet);

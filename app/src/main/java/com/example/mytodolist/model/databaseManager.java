@@ -196,7 +196,7 @@ public class databaseManager {
      * @param taskToRemove
      * @sideeffect setsDeletedOnTask
      */
-    public void deleteTask(task taskToRemove)
+    public task deleteTask(task taskToRemove)
     {
 
         try {
@@ -208,10 +208,12 @@ public class databaseManager {
             int deletedRows = writableDb.delete(task.TODO_TABLE_NAME, selection, selectionArgs);
             System.out.println("Deleteing task with id "+taskToRemove.getId());
             taskToRemove.setDeleted(true);
+            return  taskToRemove;
         }catch(SQLException e)
         {
             e.printStackTrace();
             taskToRemove.setDeleted(false);
+            return taskToRemove;
         }
     }
 
