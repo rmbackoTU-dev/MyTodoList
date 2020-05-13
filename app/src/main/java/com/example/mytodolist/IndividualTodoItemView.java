@@ -1,8 +1,6 @@
 package com.example.mytodolist;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -12,8 +10,6 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
-
 import com.example.mytodolist.model.databaseManager;
 import com.example.mytodolist.model.task;
 
@@ -25,6 +21,11 @@ public class IndividualTodoItemView extends AppCompatActivity {
     private task updateTask;
     public static final String TASK_UPDATE_INDEX="com.example.mytodolist.INTEGER";
 
+    /**
+     * onCreate used when an activity is newly created by an intent, and is not
+     * resumed from a previously created activity on the backstack
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,11 +91,16 @@ public class IndividualTodoItemView extends AppCompatActivity {
 
     }
 
+    /**
+     * Calls the database manager to add the new item to the database
+     * @param itemText
+     * @return a boolean determining if the add to database was successful
+     */
     public boolean addItemToDatabase(String itemText)
     {
         boolean success=false;
         try {
-            manager.insert(itemText);
+            manager.insertTask(itemText);
             Cursor itemCursor=manager.getItemByText(itemText);
             if(itemCursor.moveToFirst())
             {
@@ -114,6 +120,13 @@ public class IndividualTodoItemView extends AppCompatActivity {
         return success;
     }
 
+    /**
+     * Calls the database manager to update an existing task item in the databse
+     * to the newly updated text provided by parameter updateText
+     * @param updateTask
+     * @param updateText
+     * @return
+     */
     public boolean updateItemInDatabase(task updateTask, String updateText)
     {
         boolean success=false;
@@ -129,12 +142,22 @@ public class IndividualTodoItemView extends AppCompatActivity {
         return  success;
     }
 
+    /**
+     * Gets the item text from the edit box to use in variables
+     * allows editBox text to be sent as input to another function
+     * @return
+     */
     public String getItemText()
     {
         EditText itemText=findViewById(R.id.todoEditBox);
         return itemText.getText().toString();
     }
 
+    /**
+     * Sets the hint text in the editBox allows update function
+     * to indicate what item is being changed.
+     * @param hint
+     */
     public void setUpdateHint( CharSequence hint)
     {
         EditText itemText=findViewById(R.id.todoEditBox);

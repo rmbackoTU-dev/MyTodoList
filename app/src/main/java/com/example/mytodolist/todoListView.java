@@ -1,31 +1,15 @@
 package com.example.mytodolist;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.FragmentManager;
-
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.text.Layout;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.example.mytodolist.R;
-import com.example.mytodolist.IndividualTodoItemView;
 import com.example.mytodolist.model.databaseManager;
 import com.example.mytodolist.model.task;
-
 import java.util.ArrayList;
 
 
@@ -39,7 +23,11 @@ public class todoListView extends AppCompatActivity {
     private Bundle currentExtras;
 
 
-
+    /**
+     * onCreate used when an activity is newly created by an intent, and is not
+     * resumed from a previously created activity on the backstack
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +47,7 @@ public class todoListView extends AppCompatActivity {
         deleteButton.setEnabled(false);
 
 
+        //add button function call
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,6 +83,7 @@ public class todoListView extends AppCompatActivity {
         }
         );
 
+        //Delete button function call
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -103,6 +93,7 @@ public class todoListView extends AppCompatActivity {
             }
         });
 
+        //Update button function call
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,6 +119,11 @@ public class todoListView extends AppCompatActivity {
         currentExtras=newIntent.getExtras();
     }
 
+    /**
+     * onRestart called whenever an intent uses FLAG_ACTIVITY_CLEAR_TOP or
+     * FLAG_ACTIVITY_SINGLE_TOP flag to update information on the screen
+     * based on the action that occurred.
+     */
     @Override
     protected  void onRestart()
     {

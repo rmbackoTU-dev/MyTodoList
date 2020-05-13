@@ -1,8 +1,6 @@
 package com.example.mytodolist;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,11 +10,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.mytodolist.todoListView;
-
 public class MainPage extends AppCompatActivity {
 
-
+    /**
+     * onCreate used when an activity is newly created by an intent, and is not
+     * resumed from a previously created activity on the backstack
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

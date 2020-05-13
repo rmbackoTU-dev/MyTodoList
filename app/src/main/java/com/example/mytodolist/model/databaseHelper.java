@@ -16,22 +16,40 @@ public class databaseHelper extends SQLiteOpenHelper {
     public static final String TODO_TABLE_DELETE="DROP TABLE IF EXISTS "+ task.TODO_TABLE_NAME;
 
 
+    /**
+     * Initializes a SQLite Database
+     * @param c
+     */
     public databaseHelper(Context c)
     {
         super(c, databaseName, null, DB_VERSION );
         this.context=c;
     }
 
+    /**
+     * If a SQLite Database does not exist
+     * creates a new database with the table strings defined globally
+     * @param db
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(TODO_TABLE_CREATE);
     }
 
+    /**
+     * If the database version changes indicating a database schema update
+     * run onUpdate to flush data and repopulate in the new database
+     * Ideally onUpdate would resolve any conflicts that occur in the
+     * new schema or alert the developer there is a conflict
+     * with the old data and the new database schema
+     * @param db
+     * @param oldVer
+     * @param newVer
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVer, int newVer)
     {
         db.execSQL(TODO_TABLE_DELETE);
-
         onCreate(db);
     }
 }
