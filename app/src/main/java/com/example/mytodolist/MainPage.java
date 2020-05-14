@@ -26,6 +26,8 @@ public class MainPage extends AppCompatActivity {
         final TextView greeting=findViewById(R.id.greeting);
         Button viewListButton=findViewById(R.id.viewListButton);
 
+
+
         TextWatcher nameWatcher=new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -42,6 +44,7 @@ public class MainPage extends AppCompatActivity {
                 greeting.setText("Greetings "+s.toString());
             }
         };
+
 
         nameField.addTextChangedListener(nameWatcher);
 

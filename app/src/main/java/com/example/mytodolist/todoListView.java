@@ -117,6 +117,12 @@ public class todoListView extends AppCompatActivity {
         super.onNewIntent(newIntent);
         //getting the extras from the new Intent
         currentExtras=newIntent.getExtras();
+        if(currentExtras == null)
+        {
+            currentExtras=new Bundle();
+            currentExtras.putBoolean("UPDATE_RECORD_SET", false);
+            currentExtras.putInt(IndividualTodoItemView.TASK_UPDATE_INDEX, -1);
+        }
     }
 
     /**
