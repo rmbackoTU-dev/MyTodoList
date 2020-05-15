@@ -42,14 +42,10 @@ public class databaseManager {
     public void insertTask(String value)
             throws SQLException
     {
-        String rawQuery="SELECT " + task.TODO_COLUMN_ONE+ " FROM "+
+        String rawQuery="SELECT *" + " FROM "+
                 task.TODO_TABLE_NAME+";";
         Cursor idCursor=readableDb.rawQuery(rawQuery, null);
-        if(idCursor.getCount() >0 && idCursor.moveToFirst())
-        {
-            idCursor.moveToLast();
-            id=idCursor.getInt(idCursor.getColumnIndex("id"))+1;
-        }
+        id=idCursor.getCount();
         ContentValues val=new ContentValues();
         val.put(task.TODO_COLUMN_ONE,  id);
         val.put(task.TODO_COLUMN_TWO, value);
@@ -195,11 +191,9 @@ public class databaseManager {
             {
                 taskId=newCursor.getInt(
                         newCursor.getColumnIndex("id"));
- //               System.out.println("id: "+taskId);
                 taskItem=newCursor.getString(
                         newCursor.getColumnIndex("item")
                 );
- //               System.out.println("item: "+taskItem);
                 task newTodo=new task(taskItem, taskId);
                 listOfTasks.add(newTodo);
                 newCursor.moveToNext();
@@ -230,7 +224,6 @@ public class databaseManager {
             String[] selectionArgs = {new Integer(currentId).toString()};
             //Issue SQL statement.
             int deletedRows = writableDb.delete(task.TODO_TABLE_NAME, selection, selectionArgs);
-            System.out.println("Deleteing task with id "+taskToRemove.getId());
             taskToRemove.setDeleted(true);
             return  taskToRemove;
         }catch(SQLException e)
