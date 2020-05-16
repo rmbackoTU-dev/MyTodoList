@@ -37,6 +37,7 @@ public class todoListView extends AppCompatActivity {
         tasks=new ArrayList<task>();
         getAllNewTask();
 
+
         Button addButton=findViewById(R.id.addButton);
         final Button deleteButton=findViewById(R.id.removeButton);
         final Button updateButton=findViewById(R.id.updateButton);
@@ -47,8 +48,8 @@ public class todoListView extends AppCompatActivity {
 
 
         //create an add button function call.
-         addClickListener addClick=new addClickListener();
-       addButton.setOnClickListener(addClick);
+        addClickListener addClick=new addClickListener();
+        addButton.setOnClickListener(addClick);
 
         /**
          * Below is a different way of setting an add click listener
@@ -66,30 +67,39 @@ public class todoListView extends AppCompatActivity {
 //            }
 //        });
 
-        //This listener gathers which radio button is selected and uses that in order to complete
-        //delete or update activities
-        todoListGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
-        {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int selectedId)
-            {
-                if( hasSelection(group)) {
-                    RadioButton selectedButton=findViewById(selectedId);
-                    currentSelectedItem=tasks.get(selectedButton.getId());
-                    updateButton.setEnabled(true);
-                    deleteButton.setEnabled(true);
-                    System.out.println(currentSelectedItem.getItem().toString());
-                    System.out.println(currentSelectedItem.getId());
-                }
-                else
-                {
-                    updateButton.setEnabled(false);
-                    deleteButton.setEnabled(false);
-                }
+         radioChangeListener radioListener=new radioChangeListener(updateButton, deleteButton);
+         todoListGroup.setOnCheckedChangeListener(radioListener);
 
-            }
-        }
-        );
+        /**
+         * Below is a different way of setting an add click listener
+         * it is more efficient but harder to read.
+         */
+//        //This listener gathers which radio button is selected and uses that in order to complete
+//        //delete or update activities
+//        todoListGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+//        {
+//            @Override
+//            public void onCheckedChanged(RadioGroup group, int selectedId)
+//            {
+//                if( hasSelection(group)) {
+//                    RadioButton selectedButton=findViewById(selectedId);
+//                    currentSelectedItem=tasks.get(selectedButton.getId());
+//                    updateButton.setEnabled(true);
+//                    deleteButton.setEnabled(true);
+//                    System.out.println(currentSelectedItem.getItem().toString());
+//                    System.out.println(currentSelectedItem.getId());
+//                }
+//                else
+//                {
+//                    updateButton.setEnabled(false);
+//                    deleteButton.setEnabled(false);
+//                }
+//
+//            }
+//        }
+////        );
+
+
 
         //Delete button function call
         deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -430,6 +440,39 @@ public class todoListView extends AppCompatActivity {
             manager.close();
             addIntent.putExtra("UPDATE_SET", false);
             startActivity(addIntent);
+        }
+    }
+
+    public class radioChangeListener implements RadioGroup.OnCheckedChangeListener
+    {
+        private Button updateButton;
+        private Button deleteButton;
+
+        //pass buttons to the listener so it knows what to change in the view
+        public radioChangeListener(Button uButton, Button dButton)
+        {
+            super();
+            this.updateButton=uButton;
+            this.deleteButton=dButton;
+        }
+
+        @Override
+        public void onCheckedChanged(RadioGroup group, int selectedId)
+        {
+            if( hasSelection(group)) {
+                RadioButton selectedButton=findViewById(selectedId);
+                currentSelectedItem=tasks.get(selectedButton.getId());
+                updateButton.setEnabled(true);
+                deleteButton.setEnabled(true);
+                System.out.println(currentSelectedItem.getItem().toString());
+                System.out.println(currentSelectedItem.getId());
+            }
+            else
+            {
+                updateButton.setEnabled(false);
+                deleteButton.setEnabled(false);
+            }
+
         }
     }
 
