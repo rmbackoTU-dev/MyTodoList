@@ -35,7 +35,6 @@ public class todoListView extends AppCompatActivity {
         manager=new databaseManager(this);
         manager.open();
         tasks=new ArrayList<task>();
-        System.out.println("Running on create");
         getAllNewTask();
 
         Button addButton=findViewById(R.id.addButton);
@@ -47,17 +46,25 @@ public class todoListView extends AppCompatActivity {
         deleteButton.setEnabled(false);
 
 
-        //add button function call
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent addIntent= new Intent(v.getContext(), IndividualTodoItemView.class);
-                manager.close();
-                addIntent.putExtra("UPDATE_SET", false);
-                startActivity(addIntent);
+        //create an add button function call.
+         addClickListener addClick=new addClickListener();
+       addButton.setOnClickListener(addClick);
 
-            }
-        });
+        /**
+         * Below is a different way of setting an add click listener
+         * it is more efficient but harder to read.
+         */
+        //add button function call
+//        addButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent addIntent= new Intent(v.getContext(), IndividualTodoItemView.class);
+//                manager.close();
+//                addIntent.putExtra("UPDATE_SET", false);
+//                startActivity(addIntent);
+//
+//            }
+//        });
 
         //This listener gathers which radio button is selected and uses that in order to complete
         //delete or update activities
@@ -72,6 +79,7 @@ public class todoListView extends AppCompatActivity {
                     updateButton.setEnabled(true);
                     deleteButton.setEnabled(true);
                     System.out.println(currentSelectedItem.getItem().toString());
+                    System.out.println(currentSelectedItem.getId());
                 }
                 else
                 {
@@ -87,7 +95,6 @@ public class todoListView extends AppCompatActivity {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("Deleting item "+currentSelectedItem.getItem());
                 removeTaskFromDatabaseAndUI(currentSelectedItem);
                 taskLength=taskLength-1;
             }
@@ -119,6 +126,7 @@ public class todoListView extends AppCompatActivity {
         currentExtras=newIntent.getExtras();
         if(currentExtras == null)
         {
+            System.out.println("Checking new Intent");
             currentExtras=new Bundle();
             currentExtras.putBoolean("UPDATE_RECORD_SET", false);
             currentExtras.putInt(IndividualTodoItemView.TASK_UPDATE_INDEX, -1);
@@ -140,7 +148,6 @@ public class todoListView extends AppCompatActivity {
           /*Still need to pull whole database better solution would grab only task not in list
            maybe we could keep a counter*/
           updateRecordSet=currentExtras.getBoolean("UPDATE_RECORD_SET");
-          System.out.println("Running on Restart");
           manager.open();
           task updateTask;
           /**After we recieve a intent back from the IndividualTodoItemView that a record was updated
@@ -148,24 +155,13 @@ public class todoListView extends AppCompatActivity {
           *isListed **/
           if(updateRecordSet)
           {
-              System.out.println("Running code to update task");
               indexToSet=currentExtras.getInt(IndividualTodoItemView.TASK_UPDATE_INDEX);
-              System.out.println("Index to update is set to "+indexToSet);
               updateTask=tasks.get(indexToSet);
               updateTask.setUpdated(true);
               tasks.remove(indexToSet);
               tasks.add(indexToSet, updateTask);
           }
           getAllNewTask();
-
-
-          task globalTask;
-          for(int i=0; i<tasks.size(); i++)
-          {
-              globalTask=tasks.get(i);
-              System.out.println("After restart ran "+globalTask.getItem()+
-                      " was displayed: "+globalTask.isDisplayed());
-          }
 
         // ensure we can navigate to the correct point in the back stack
         FragmentManager fm=this.getSupportFragmentManager();
@@ -236,8 +232,6 @@ public class todoListView extends AppCompatActivity {
                 //end loop by incrementing isDeletedIndex
                 isDeletedIndex=isDeletedIndex+1;
             }
-            System.out.println("New RadioButton Count "+radioButtonCount);
-
         }
 
         int newTaskId=isAddedIndex;
@@ -253,7 +247,9 @@ public class todoListView extends AppCompatActivity {
                 newRadioButton.setText(currentTask.getItem());
                 currentRadioGroup.addView(newRadioButton);
                 currentTask.setDisplayed(true);
+                currentTask.setId(isAddedIndex);
                 displayedTasks.add(currentTask);
+                isAddedIndex=isAddedIndex+1;
             }
         }
 
@@ -329,16 +325,16 @@ public class todoListView extends AppCompatActivity {
     public ArrayList<task> setDisplayedAndUpdated(ArrayList<task> taskList)
     {
         task currentTask;
-        ArrayList newTaskList=new ArrayList<task>();
-        int currentTaskid;
+        ArrayList<task> newTaskList=new ArrayList<task>();
         task globalCurrentTask;
         for(int i=0; i<taskList.size(); i++)
         {
             currentTask=taskList.get(i);
-            currentTaskid=currentTask.getId();
-            if(currentTaskid < tasks.size())
-            {
-                globalCurrentTask=tasks.get(currentTaskid);
+            //if the index is lower than the size of the task list
+            //we assume that the task is old and has a record
+            //otherwise the data pulled from the database is correct.
+            if(i<tasks.size()){
+                globalCurrentTask=tasks.get(i);
                 currentTask.setDisplayed(globalCurrentTask.isDisplayed());
                 currentTask.setUpdated(globalCurrentTask.isUpdated());
             }
@@ -355,21 +351,11 @@ public class todoListView extends AppCompatActivity {
     public void getAllNewTask()
     {
         ArrayList<task> taskList=manager.getAllTask();
-        System.out.println("Number of tasks retrieved "+taskList.size());
         ArrayList<task> updatedList=new ArrayList<task>();
-        ArrayList<task> removeList=new ArrayList<task>();
         ArrayList<task> additionList=new ArrayList<task>();
 
         //check which tasks are displayed first
         taskList=setDisplayedAndUpdated(taskList);
-
-        for(int h=0; h<taskList.size(); h++)
-        {
-            task aTask=taskList.get(h);
-            System.out.println("task "+aTask.getId()+" is displayed: "
-                    +aTask.isDisplayed());
-        }
-
         task currentTask;
         int itemsToAdd=0;
         for(int i=0; i< taskList.size(); i++)
@@ -382,10 +368,10 @@ public class todoListView extends AppCompatActivity {
              * because taskList will not have displayed status
              */
 
-            if(!currentTask.isDisplayed())
+            //Only want to add a item if it is not displayed or not marked
+            //to be deleted.
+            if(!currentTask.isDisplayed() && !currentTask.isDeleted())
             {
-                System.out.println("Current task with id "+currentTask.getId()+" " +
-                        "was added to additionList");
                 additionList.add(itemsToAdd, currentTask);
                 itemsToAdd=itemsToAdd+1;
             }
@@ -409,48 +395,23 @@ public class todoListView extends AppCompatActivity {
 
         //Perform all of the interface update tasks
         if (!additionList.isEmpty()) {
-            System.out.println("Not EMPTY new items ");
-            //ensure any new tasks are addded to the task list using their
+            //ensure any new tasks are added to the task list using their
             //id
-            task newTask;
-            for(int j=0; j<additionList.size(); j++)
-            {
-                newTask=taskList.get(j);
-                System.out.println("Adding the task with id " +(newTask.getId()));
-            }
             //perform addition to interface
             ArrayList<task> displayedTaskList=addToList(additionList);
 
             //add the displayed tasks to tasks so that they are not added again
             task currentDisplayedTask;
-
-            for(int l=0; l< additionList.size(); l++)
+            for(int l=0; l< displayedTaskList.size(); l++)
             {
                 currentDisplayedTask=displayedTaskList.get(l);
                 tasks.add(currentDisplayedTask.getId(), currentDisplayedTask);
             }
-
         }
 
         if (!updatedList.isEmpty()) {
             updateList(updatedList);
-            System.out.println("Not EMPTY update items");
         }
-
-//        System.out.println("Is remove list empty: "+removeList.isEmpty());
-//        if (!removeList.isEmpty()) {
-//            System.out.println("NOT EMPTY deleted items");
-//            task removeItem;
-//            for(int k=0; k<removeList.size(); k++)
-//            {
-//                removeItem=removeList.get(k);
-//                System.out.println("Removing: "+removeItem.getId()+": "+
-//                        removeItem.getItem());
-//            }
-//            deleteFromList(removeList);
-//
-//        }
-
     }
 
 
@@ -458,5 +419,20 @@ public class todoListView extends AppCompatActivity {
     {
         return (group.getCheckedRadioButtonId() != -1);
     }
+
+
+    //Listener Inheritance inner classes
+    public class addClickListener implements View.OnClickListener
+    {
+        @Override
+        public void onClick(View v) {
+            Intent addIntent= new Intent(v.getContext(), IndividualTodoItemView.class);
+            manager.close();
+            addIntent.putExtra("UPDATE_SET", false);
+            startActivity(addIntent);
+        }
+    }
+
+
 
 }
