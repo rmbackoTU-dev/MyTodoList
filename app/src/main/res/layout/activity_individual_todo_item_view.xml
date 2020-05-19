@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/individualItemView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".IndividualTodoItemView">
@@ -43,10 +44,10 @@
         android:layout_marginEnd="128dp"
         android:layout_marginRight="128dp"
         android:layout_marginBottom="64dp"
-        android:hint="Add Todo Text Here"
         android:text="Add To List"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/todoEditBox" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

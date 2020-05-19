@@ -37,10 +37,8 @@ public class IndividualTodoItemView extends AppCompatActivity {
         final Button addToList=findViewById(R.id.addToList);
         addToList.setEnabled(false);
 
-        System.out.println("Checking update intent");
         Intent updateIntent=getIntent();
         updateSet=updateIntent.getExtras().getBoolean("UPDATE_SET");
-        System.out.println("UPDATE IS SET TO "+updateSet);
         if(updateSet)
         {
             updateTask=(task) updateIntent.getSerializableExtra(todoListView.TODO_OBJ);
@@ -78,10 +76,9 @@ public class IndividualTodoItemView extends AppCompatActivity {
                 }
                 else
                 {
-                    if (addItemToDatabase(getItemText())) {
-                        System.out.println("Success");
-                    } else {
-                        System.out.println("Fail");
+                    if(!(addItemToDatabase(getItemText())))
+                    {
+                        System.err.println("Failed to add item "+getItemText());
                     }
                     returnToList.putExtra("UPDATE_RECORD_SET", false);
                 }
@@ -108,8 +105,6 @@ public class IndividualTodoItemView extends AppCompatActivity {
                 String textFound=itemCursor.getString(itemIndex);
                 System.out.println(textFound);
                 int itemNum=itemCursor.getCount();
-                System.out.println("The items returned by the add to database query is "+
-                        itemNum);
                 success=(itemNum>0);
             }
         }

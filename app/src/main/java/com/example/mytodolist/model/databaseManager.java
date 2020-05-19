@@ -191,6 +191,7 @@ public class databaseManager {
             {
                 taskId=newCursor.getInt(
                         newCursor.getColumnIndex("id"));
+                System.out.println("Task id: "+id);
                 taskItem=newCursor.getString(
                         newCursor.getColumnIndex("item")
                 );
@@ -286,40 +287,40 @@ public class databaseManager {
      * can be used in cases where limiting id fragmentation is
      * important
      */
-//    public void updateTaskID(task taskToUpdate, int newID)
-//    {
-//        try {
-//            int queryTaskID;
-//            String queryTaskItem;
-//            int currentId = taskToUpdate.getId();
-//            System.out.println("Updating id "+currentId+" to "+newID);
-//            String currentItem = taskToUpdate.getItem();
-//            ContentValues updateValues = new ContentValues();
-//            updateValues.put(task.TODO_COLUMN_ONE, currentId);
-//            updateValues.put(task.TODO_COLUMN_TWO, currentItem);
-//            String updateSelectionQuery = "SELECT " + task.TODO_COLUMN_ONE + ", " +
-//                    task.TODO_COLUMN_TWO + " FROM " +
-//                    task.TODO_TABLE_NAME + " WHERE " +
-//                    task.TODO_COLUMN_ONE + "='" +
-//                    currentId + "';";
-//            Cursor updateCursor = readableDb.rawQuery(updateSelectionQuery, null);
-//
-//            if (updateCursor.moveToFirst() && updateCursor.getCount() > 0) {
-//
-//                queryTaskItem=updateCursor.getString(
-//                        updateCursor.getColumnIndex("item"));
-//                String updateQuery="UPDATE "+ task.TODO_TABLE_NAME+ " SET "+
-//                        task.TODO_COLUMN_ONE+"='"+newID+"' WHERE "+
-//                        task.TODO_COLUMN_TWO+"='"+queryTaskItem+"';";
-//                writableDb.execSQL(updateQuery);
-//                taskToUpdate.setId(newID);
-//                //do not set update because content was not modified
-//            }
-//        }catch (SQLException e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+    public void updateTaskID(task taskToUpdate, int newID)
+    {
+        try {
+            int queryTaskID;
+            String queryTaskItem;
+            int currentId = taskToUpdate.getId();
+            System.out.println("Updating id "+currentId+" to "+newID);
+            String currentItem = taskToUpdate.getItem();
+            ContentValues updateValues = new ContentValues();
+            updateValues.put(task.TODO_COLUMN_ONE, currentId);
+            updateValues.put(task.TODO_COLUMN_TWO, currentItem);
+            String updateSelectionQuery = "SELECT " + task.TODO_COLUMN_ONE + ", " +
+                    task.TODO_COLUMN_TWO + " FROM " +
+                    task.TODO_TABLE_NAME + " WHERE " +
+                    task.TODO_COLUMN_ONE + "='" +
+                    currentId + "';";
+            Cursor updateCursor = readableDb.rawQuery(updateSelectionQuery, null);
+
+            if (updateCursor.moveToFirst() && updateCursor.getCount() > 0) {
+
+                queryTaskItem=updateCursor.getString(
+                        updateCursor.getColumnIndex("item"));
+                String updateQuery="UPDATE "+ task.TODO_TABLE_NAME+ " SET "+
+                        task.TODO_COLUMN_ONE+"='"+newID+"' WHERE "+
+                        task.TODO_COLUMN_TWO+"='"+queryTaskItem+"';";
+                writableDb.execSQL(updateQuery);
+                taskToUpdate.setId(newID);
+                //do not set update because content was not modified
+            }
+        }catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Closes the connection to the database

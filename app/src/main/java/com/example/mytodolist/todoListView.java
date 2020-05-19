@@ -36,15 +36,12 @@ public class todoListView extends AppCompatActivity {
         manager.open();
         tasks=new ArrayList<task>();
         getAllNewTask();
-
-
         Button addButton=findViewById(R.id.addButton);
         final Button deleteButton=findViewById(R.id.removeButton);
         final Button updateButton=findViewById(R.id.updateButton);
         RadioGroup todoListGroup=findViewById(R.id.todoListRadio);
         updateButton.setEnabled(false);
         deleteButton.setEnabled(false);
-
 
         //create an add button function call.
         addClickListener addClick=new addClickListener();
@@ -102,7 +99,7 @@ public class todoListView extends AppCompatActivity {
 
 
         //delete button function call
-       deleteButtonListener deleteListener= new deleteButtonListener();
+        deleteButtonListener deleteListener=new deleteButtonListener();
        deleteButton.setOnClickListener(deleteListener);
         /**
          * Below is a different way of setting an add click listener
@@ -447,12 +444,6 @@ public class todoListView extends AppCompatActivity {
     }
 
 
-    public static boolean hasSelection(RadioGroup group)
-    {
-        return (group.getCheckedRadioButtonId() != -1);
-    }
-
-
     /**
      * Below is the set of Listeners needed for this interface
      *  <ol>
@@ -466,7 +457,11 @@ public class todoListView extends AppCompatActivity {
     public class addClickListener implements View.OnClickListener
     {
         @Override
-        public void onClick(View v) {
+        public void onClick(View v) throws IllegalArgumentException {
+            if( v == null)
+            {
+                throw new IllegalArgumentException();
+            }
             Intent addIntent= new Intent(v.getContext(), IndividualTodoItemView.class);
             addIntent.putExtra("UPDATE_SET", false);
             startActivity(addIntent);
@@ -480,15 +475,27 @@ public class todoListView extends AppCompatActivity {
 
         //pass buttons to the listener so it knows what to change in the view
         public radioChangeListener(Button uButton, Button dButton)
+        throws IllegalArgumentException
         {
             super();
-            this.updateButton=uButton;
-            this.deleteButton=dButton;
+            if(uButton == null || dButton == null)
+            {
+                throw new IllegalArgumentException();
+            }
+            else {
+                this.updateButton = uButton;
+                this.deleteButton = dButton;
+            }
         }
 
         @Override
         public void onCheckedChanged(RadioGroup group, int selectedId)
+                throws IllegalArgumentException
         {
+            if(group == null)
+            {
+                throw new IllegalArgumentException();
+            }
             if( hasSelection(group)) {
                 RadioButton selectedButton=findViewById(selectedId);
                 currentSelectedItem=tasks.get(selectedButton.getId());
@@ -504,12 +511,21 @@ public class todoListView extends AppCompatActivity {
             }
 
         }
+
+        public boolean hasSelection(RadioGroup group)
+        {
+            return (group.getCheckedRadioButtonId() != -1);
+        }
     }
 
     public class deleteButtonListener implements View.OnClickListener
     {
         @Override
-        public void onClick(View v) {
+        public void onClick(View v) throws IllegalArgumentException{
+            if(v == null)
+            {
+                throw new IllegalArgumentException();
+            }
             removeTaskFromDatabaseAndUI(currentSelectedItem);
             taskLength=taskLength-1;
         }
@@ -518,8 +534,12 @@ public class todoListView extends AppCompatActivity {
     public class updateButtonListener implements  View.OnClickListener
     {
         @Override
-        public void onClick(View v)
+        public void onClick(View v) throws IllegalArgumentException
         {
+            if(v == null)
+            {
+                throw new IllegalArgumentException();
+            }
             Intent updateIntent=new Intent(v.getContext(), IndividualTodoItemView.class);
             updateIntent.putExtra("UPDATE_SET", true);
             updateIntent.putExtra(TODO_OBJ, currentSelectedItem);
