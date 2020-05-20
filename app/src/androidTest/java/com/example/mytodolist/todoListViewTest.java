@@ -7,9 +7,12 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import androidx.test.annotation.UiThreadTest;
@@ -39,7 +42,6 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
-import org.junit.internal.runners.JUnit4ClassRunner;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.RunListener;
 
@@ -224,5 +226,64 @@ public class todoListViewTest {
         }
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testNullViewAddOnClick()
+    {
+        testTodoListActivity.addClick.onClick(null);
+    }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testNullViewDeleteOnClick()
+    {
+        testTodoListActivity.deleteClick.onClick(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNullViewUpdateOnClick()
+    {
+        testTodoListActivity.updateClick.onClick(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testOnCheckedChangeNullGroup0Id()
+    {
+        RadioGroup nullRadio=null;
+        testTodoListActivity.radioChange.onCheckedChanged(nullRadio, 0);
+    }
+
+    @Test
+    public void testEmptyGroup0Id()
+    {
+        RadioGroup emptyGroup=new RadioGroup(testContext);
+        testTodoListActivity.radioChange.onCheckedChanged(emptyGroup, 0);
+        if( !(testTodoListActivity.updateButton.isEnabled()))
+        {
+            Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled" );
+        }
+        if( !(testTodoListActivity.deleteButton.isEnabled()))
+        {
+            Log.i("VAR_STATUS", "DELETE BUTTON is not enabled" );
+        }
+        Assert.assertFalse(testTodoListActivity.deleteButton.isEnabled());
+        Assert.assertFalse(testTodoListActivity.updateButton.isEnabled());
+    }
+
+    @Test
+    public void test1ItemGroup0Id()
+    {
+        //todo test via espresso due to dependency on RadioGroup in UI
+
+        //todo Add assert RadioButton is selected for in activity radio Button
+        if( (testTodoListActivity.updateButton.isEnabled()))
+        {
+            Log.i("VAR_STATUS", "UPDATE BUTTON is enabled" );
+        }
+        if( (testTodoListActivity.deleteButton.isEnabled()))
+        {
+            Log.i("VAR_STATUS", "UPDATE BUTTON is enabled" );
+        }
+        Assert.assertTrue(testTodoListActivity.updateButton.isEnabled());
+        Assert.assertTrue(testTodoListActivity.deleteButton.isEnabled());
+
+    }
 }

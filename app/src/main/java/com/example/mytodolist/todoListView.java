@@ -21,6 +21,13 @@ public class todoListView extends AppCompatActivity {
     private int taskLength=0;
     private task currentSelectedItem=null;
     private Bundle currentExtras;
+    public Button addButton;
+    public Button deleteButton;
+    public Button updateButton;
+    public addClickListener addClick;
+    public deleteButtonListener deleteClick;
+    public updateButtonListener updateClick;
+    public radioChangeListener radioChange;
 
 
     /**
@@ -36,15 +43,15 @@ public class todoListView extends AppCompatActivity {
         manager.open();
         tasks=new ArrayList<task>();
         getAllNewTask();
-        Button addButton=findViewById(R.id.addButton);
-        final Button deleteButton=findViewById(R.id.removeButton);
-        final Button updateButton=findViewById(R.id.updateButton);
+        addButton=findViewById(R.id.addButton);
+        deleteButton=findViewById(R.id.removeButton);
+        updateButton=findViewById(R.id.updateButton);
         RadioGroup todoListGroup=findViewById(R.id.todoListRadio);
         updateButton.setEnabled(false);
         deleteButton.setEnabled(false);
 
         //create an add button function call.
-        addClickListener addClick=new addClickListener();
+        addClick=new addClickListener();
         addButton.setOnClickListener(addClick);
 
         /**
@@ -65,8 +72,8 @@ public class todoListView extends AppCompatActivity {
 
         //This listener gathers which radio button is selected and uses that in order to complete
         //delete or update activities
-         radioChangeListener radioListener=new radioChangeListener(updateButton, deleteButton);
-         todoListGroup.setOnCheckedChangeListener(radioListener);
+         radioChange=new radioChangeListener(updateButton, deleteButton);
+         todoListGroup.setOnCheckedChangeListener(radioChange);
 
         /**
          * Below is a different way of setting an add click listener
@@ -99,8 +106,8 @@ public class todoListView extends AppCompatActivity {
 
 
         //delete button function call
-        deleteButtonListener deleteListener=new deleteButtonListener();
-       deleteButton.setOnClickListener(deleteListener);
+        deleteClick=new deleteButtonListener();
+        deleteButton.setOnClickListener(deleteClick);
         /**
          * Below is a different way of setting an add click listener
          * it is more efficient but harder to read.
@@ -119,8 +126,8 @@ public class todoListView extends AppCompatActivity {
          * Below is a different way of setting an add click listener
          * it is more efficient but harder to read.
          */
-        updateButtonListener updateListener=new updateButtonListener();
-        updateButton.setOnClickListener(updateListener);
+        updateClick=new updateButtonListener();
+        updateButton.setOnClickListener(updateClick);
 
         //Update button function call
 //        updateButton.setOnClickListener(new View.OnClickListener() {
@@ -470,8 +477,8 @@ public class todoListView extends AppCompatActivity {
 
     public class radioChangeListener implements RadioGroup.OnCheckedChangeListener
     {
-        private Button updateButton;
-        private Button deleteButton;
+        private final Button updateButton;
+        private final Button deleteButton;
 
         //pass buttons to the listener so it knows what to change in the view
         public radioChangeListener(Button uButton, Button dButton)
