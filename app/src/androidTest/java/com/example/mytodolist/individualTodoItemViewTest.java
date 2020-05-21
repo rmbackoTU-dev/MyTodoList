@@ -77,10 +77,8 @@ public class individualTodoItemViewTest {
         //Stub all external intents
         Intents.intending(Matchers.not(
                 IntentMatchers.isInternal())).respondWith(
-                externalResult);
         testIndividualTodoItemView=individualTest.getActivity();
-        testIndividualTodoItemView.startActivity(testIntent);
-        mainHandler=new Handler(Looper.getMainLooper());
+
 
     }
 
@@ -104,9 +102,11 @@ public class individualTodoItemViewTest {
     }
 
     @Test
-    public void testNodeCoverageTextListener()
+    public void testNodeCoverageTextListenerAdd()
     {
         try{
+            testIntent.putExtra("UPDATE_SET",false);
+            testIndividualTodoItemView.startActivity(testIntent);
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -114,6 +114,7 @@ public class individualTodoItemViewTest {
             Thread.sleep(500);
             Espresso.closeSoftKeyboard();
             Thread.sleep(500);
+
             //addToList.setEnabled(true);
         }catch(InterruptedException ie){
             ie.printStackTrace();
