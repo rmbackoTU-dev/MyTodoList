@@ -30,6 +30,7 @@ public class todoListView extends AppCompatActivity {
     public radioChangeListener radioChange;
 
 
+
     /**
      * onCreate used when an activity is newly created by an intent, and is not
      * resumed from a previously created activity on the backstack
@@ -280,6 +281,7 @@ public class todoListView extends AppCompatActivity {
                 newRadioButton = new RadioButton(this);
                 newRadioButton.setId(isAddedIndex);
                 newRadioButton.setText(currentTask.getItem());
+                newRadioButton.setTag("id_"+isAddedIndex);
                 currentRadioGroup.addView(newRadioButton);
                 manager.updateTaskID(currentTask, isAddedIndex);
                 currentTask.setDisplayed(true);
@@ -343,6 +345,7 @@ public class todoListView extends AppCompatActivity {
             newButton=new RadioButton(this);
             newButton.setId(currentTask.getId());
             newButton.setText(currentTask.getItem());
+            newButton.setTag("id_"+currentTask.getId());
             currentRadioGroup.addView(newButton);
             currentTask.setDisplayed(true);
             displayedTasks.add(currentTask);
@@ -503,25 +506,32 @@ public class todoListView extends AppCompatActivity {
             {
                 throw new IllegalArgumentException();
             }
-            if( hasSelection(group)) {
+            if( hasSelection(group) == selectedId && selectedId != -1) {
                 RadioButton selectedButton=findViewById(selectedId);
                 currentSelectedItem=tasks.get(selectedButton.getId());
-                updateButton.setEnabled(true);
-                deleteButton.setEnabled(true);
+                this.updateButton.setEnabled(true);
+                this.deleteButton.setEnabled(true);
                 System.out.println(currentSelectedItem.getItem().toString());
                 System.out.println(currentSelectedItem.getId());
             }
             else
             {
-                updateButton.setEnabled(false);
-                deleteButton.setEnabled(false);
+                this.updateButton.setEnabled(false);
+                this.deleteButton.setEnabled(false);
             }
-
         }
 
-        public boolean hasSelection(RadioGroup group)
+        public int hasSelection(RadioGroup group)
         {
-            return (group.getCheckedRadioButtonId() != -1);
+            System.out.println("Is Checked "+group.getCheckedRadioButtonId());
+            if(group.getCheckedRadioButtonId() != -1)
+            {
+                return group.getCheckedRadioButtonId();
+            }
+            else
+            {
+                return -1;
+            }
         }
     }
 
