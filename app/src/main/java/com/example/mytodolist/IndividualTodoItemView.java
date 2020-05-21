@@ -88,6 +88,18 @@ public class IndividualTodoItemView extends AppCompatActivity {
 
     }
 
+
+    /**
+     * Used to handle back press in espresso testing environment
+     */
+    @Override
+    public void onBackPressed()
+    {
+        Intent backIntent=new Intent(getApplicationContext(), todoListView.class);
+        backIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(backIntent);
+    }
+
     /**
      * Calls the database manager to add the new item to the database
      * @param itemText

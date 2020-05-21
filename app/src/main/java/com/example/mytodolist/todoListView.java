@@ -17,7 +17,7 @@ public class todoListView extends AppCompatActivity {
 
     databaseManager manager;
     public static final String TODO_OBJ="com.example.mytodolist.OBJECT";
-    private ArrayList<task> tasks;
+    public ArrayList<task> tasks;
     private int taskLength=0;
     private task currentSelectedItem=null;
     private Bundle currentExtras;
@@ -208,7 +208,15 @@ public class todoListView extends AppCompatActivity {
      * Delete a task from the database
      * then the UI
      */
-    public void removeTaskFromDatabaseAndUI(task taskToRemove){
+    public void removeTaskFromDatabaseAndUI(task taskToRemove)
+    throws IllegalArgumentException{
+
+        //check for null input
+        if(taskToRemove == null)
+        {
+            throw new  IllegalArgumentException();
+        }
+
         //deleting the task should set it as isDeleted
         task removedTask=manager.deleteTask(taskToRemove);
         int removedID=removedTask.getId();
@@ -301,12 +309,15 @@ public class todoListView extends AppCompatActivity {
             tasks.add(newTaskId, currentDisplayedTask);
             newTaskId=newTaskId+1;
         }
+        startOfNewlyAddedTasks=startOfNewlyAddedTasks+displayedTasks.size();
         /**any tasks left over on tasks at positions greater than newTaskID+displayedTasks.size()
         should be able to safely be removed from tasks**/
         for(int p=startOfNewlyAddedTasks; p<tasks.size(); p++)
         {
             tasks.remove(p);
         }
+
+
     }
 
 
@@ -543,8 +554,14 @@ public class todoListView extends AppCompatActivity {
             {
                 throw new IllegalArgumentException();
             }
-            removeTaskFromDatabaseAndUI(currentSelectedItem);
-            taskLength=taskLength-1;
+            try {
+                removeTaskFromDatabaseAndUI(currentSelectedItem);
+                taskLength = taskLength - 1;
+            }
+            catch(IllegalArgumentException ie)
+            {
+                ie.printStackTrace();
+            }
         }
     }
 
