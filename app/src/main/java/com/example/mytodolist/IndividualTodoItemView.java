@@ -1,6 +1,8 @@
 package com.example.mytodolist;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AutomaticZenRule;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -20,6 +22,8 @@ public class IndividualTodoItemView extends AppCompatActivity {
     private boolean updateSet=false;
     private task updateTask;
     public static final String TASK_UPDATE_INDEX="com.example.mytodolist.INTEGER";
+    public Button addToListButton;
+    public EditText todoEditBox;
 
     /**
      * onCreate used when an activity is newly created by an intent, and is not
@@ -33,9 +37,10 @@ public class IndividualTodoItemView extends AppCompatActivity {
         manager=new databaseManager(this);
         manager.open();
 
-        EditText todoEditBox=findViewById(R.id.todoEditBox);
-        final Button addToList=findViewById(R.id.addToList);
-        addToList.setEnabled(false);
+
+        todoEditBox=findViewById(R.id.todoEditBox);
+        addToListButton=findViewById(R.id.addToList);
+        addToListButton.setEnabled(false);
 
         Intent updateIntent=getIntent();
         updateSet=updateIntent.getExtras().getBoolean("UPDATE_SET");
@@ -45,46 +50,12 @@ public class IndividualTodoItemView extends AppCompatActivity {
             setUpdateHint(updateTask.getItem().toString());
         }
 
-        TextWatcher itemTextWatcher=new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+          editBoxWatcher editWatcher=new editBoxWatcher(this.addToListButton);
+          todoEditBox.addTextChangedListener(editWatcher);
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                addToList.setEnabled(!getItemText().isEmpty());
-            }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        };
-
-        todoEditBox.addTextChangedListener(itemTextWatcher);
-
-        addToList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent returnToList=new Intent(v.getContext(), todoListView.class);
-                returnToList.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                if(updateSet)
-                {
-                    updateItemInDatabase(updateTask, getItemText());
-                    returnToList.putExtra("UPDATE_RECORD_SET", true);
-                    returnToList.putExtra(TASK_UPDATE_INDEX, updateTask.getId());
-                }
-                else
-                {
-                    if(!(addItemToDatabase(getItemText())))
-                    {
-                        System.err.println("Failed to add item "+getItemText());
-                    }
-                    returnToList.putExtra("UPDATE_RECORD_SET", false);
-                }
-                startActivity(returnToList);
-            }
-        });
+          addToListClickListener addListListener= new addToListClickListener();
+          addToListButton.setOnClickListener(addListListener);
 
     }
 
@@ -169,5 +140,55 @@ public class IndividualTodoItemView extends AppCompatActivity {
     {
         EditText itemText=findViewById(R.id.todoEditBox);
         itemText.setHint(hint);
+    }
+
+    public class editBoxWatcher implements TextWatcher{
+
+        public final Button addToListButton;
+
+        public editBoxWatcher(Button addToListButton)
+        {
+            this.addToListButton=addToListButton;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            this.addToListButton.setEnabled(!getItemText().isEmpty());
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    }
+
+    public class addToListClickListener implements View.OnClickListener
+    {
+
+        @Override
+        public void onClick(View v)
+        {
+            Intent returnToList=new Intent(v.getContext(), todoListView.class);
+            returnToList.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            if(updateSet)
+            {
+                updateItemInDatabase(updateTask, getItemText());
+                returnToList.putExtra("UPDATE_RECORD_SET", true);
+                returnToList.putExtra(TASK_UPDATE_INDEX, updateTask.getId());
+            }
+            else
+            {
+                if(!(addItemToDatabase(getItemText())))
+                {
+                    System.err.println("Failed to add item "+getItemText());
+                }
+                returnToList.putExtra("UPDATE_RECORD_SET", false);
+            }
+            startActivity(returnToList);
+        }
     }
 }
