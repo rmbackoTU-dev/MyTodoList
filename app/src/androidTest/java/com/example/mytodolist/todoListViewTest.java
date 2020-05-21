@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -47,6 +48,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runner.notification.RunListener;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
 import java.lang.Thread.*;
 
@@ -60,6 +62,10 @@ public class todoListViewTest {
     public todoListView testTodoListActivity;
     public Intent testIntent;
     public final long  DEFAULT_SLEEP_TIME=500;
+    public Handler mainHandler;
+    //Set Time out of functions occurring outside main thread to 10 seconds
+    public final long timeOutAmount=10;
+    public final TimeUnit timeOutUnit=TimeUnit.SECONDS;
 
 
     @Rule
@@ -82,6 +88,7 @@ public class todoListViewTest {
                         externalResult);
         testTodoListActivity=todoListViewIntentsRule.getActivity();
         testTodoListActivity.startActivity(testIntent);
+        mainHandler=new Handler(Looper.getMainLooper());
 
     }
 
@@ -328,6 +335,40 @@ public class todoListViewTest {
     }
 
     @Test
+    public void testEmptyGroup1Id()
+    {
+        RadioGroup emptyGroup=new RadioGroup(testContext);
+        testTodoListActivity.radioChange.onCheckedChanged(emptyGroup, 1);
+        if( !(testTodoListActivity.updateButton.isEnabled()))
+        {
+            Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled" );
+        }
+        if( !(testTodoListActivity.deleteButton.isEnabled()))
+        {
+            Log.i("VAR_STATUS", "DELETE BUTTON is not enabled" );
+        }
+        Assert.assertFalse(testTodoListActivity.deleteButton.isEnabled());
+        Assert.assertFalse(testTodoListActivity.updateButton.isEnabled());
+    }
+
+    @Test
+    public void testEmptyGroupNegativeOneId()
+    {
+        RadioGroup emptyGroup=new RadioGroup(testContext);
+        testTodoListActivity.radioChange.onCheckedChanged(emptyGroup, -1);
+        if( !(testTodoListActivity.updateButton.isEnabled()))
+        {
+            Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled" );
+        }
+        if( !(testTodoListActivity.deleteButton.isEnabled()))
+        {
+            Log.i("VAR_STATUS", "DELETE BUTTON is not enabled" );
+        }
+        Assert.assertFalse(testTodoListActivity.deleteButton.isEnabled());
+        Assert.assertFalse(testTodoListActivity.updateButton.isEnabled());
+    }
+
+    @Test
     public void test1ItemGroup0Id()
     {
         try {
@@ -515,6 +556,691 @@ public class todoListViewTest {
         {
             ie.printStackTrace();
         }
+    }
+
+
+    @Test
+    public void test2ItemGroup1IdWithUIClick()
+    {
+        try {
+            String testInput = "test1";
+            String testInputTwo="test2";
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            /*
+             * Add Item number 2
+             */
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            /*
+             *Add the text to the database
+             *Verify the button exist
+             *
+             */
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInputTwo));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Click the button in the UI so has selection is not -1
+            Espresso.onView(ViewMatchers.withText(testInputTwo)).perform(
+                    ViewActions.click()
+            );
+            RadioGroup appRadioGroup=testTodoListActivity.findViewById(R.id.todoListRadio);
+            /**
+             * Function under test onCheckedChanged
+             * test with 1 selectID
+             */
+            testTodoListActivity.radioChange.onCheckedChanged(appRadioGroup, 1);
+            Log.i("RADIO_CHECK_STATUS", "Radio button currently selected is "
+                    +appRadioGroup.getCheckedRadioButtonId());
+            //Verify that the radio button is selected
+            if (testTodoListActivity.updateButton.isEnabled()) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is enabled");
+            }
+            if (testTodoListActivity.deleteButton.isEnabled()) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is  enabled");
+            }
+            Assert.assertTrue(testTodoListActivity.updateButton.isEnabled());
+            Assert.assertTrue(testTodoListActivity.deleteButton.isEnabled());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+    }
+
+    @Test
+    public void test2ItemGroup1IdWithoutUIClick()
+    {
+        try {
+            String testInput = "test1";
+            String testInputTwo="test2";
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            /*
+             * Add Item number 2
+             */
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            /*
+             *Add the text to the database
+             *Verify the button exist
+             *
+             */
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInputTwo));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            RadioGroup appRadioGroup=testTodoListActivity.findViewById(R.id.todoListRadio);
+            /**
+             * Function under test onCheckedChanged
+             * test with 1 selectID
+             */
+            testTodoListActivity.radioChange.onCheckedChanged(appRadioGroup, 1);
+            Log.i("RADIO_CHECK_STATUS", "Radio button currently selected is "
+                    +appRadioGroup.getCheckedRadioButtonId());
+            //Verify that the radio button is selected
+            if (!(testTodoListActivity.updateButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled");
+            }
+            if (!(testTodoListActivity.deleteButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled ");
+            }
+            Assert.assertFalse(testTodoListActivity.updateButton.isEnabled());
+            Assert.assertFalse(testTodoListActivity.deleteButton.isEnabled());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+    }
+
+
+    @Test
+    public void test1ItemGroupNegativeOneIdWithoutUIClick()
+    {
+        try {
+            String testInput = "test1";
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            RadioGroup appRadioGroup=testTodoListActivity.findViewById(R.id.todoListRadio);
+            /**
+             * Function under test onCheckedChanged
+             * test with -1 selectID, with 1 item
+             */
+            testTodoListActivity.radioChange.onCheckedChanged(appRadioGroup, -1);
+            //Verify that the radio button is selected
+            if (!(testTodoListActivity.updateButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled");
+            }
+            if (!(testTodoListActivity.deleteButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled ");
+            }
+            Assert.assertFalse(testTodoListActivity.updateButton.isEnabled());
+            Assert.assertFalse(testTodoListActivity.deleteButton.isEnabled());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+    }
+
+    @Test
+    public void test1ItemGroupNegativeOneIdWithUIClick()
+    {
+        try {
+            String testInput = "test1";
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            //Click the Radio Button in the UI to see if onCheckedChangedNotices a difference
+            ViewInteraction RadioButtonInteraction=Espresso.onView(ViewMatchers.withText(
+                    testInput
+            ));
+            RadioButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            this.mainHandler.post(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.i("TEST_RADIO_CHANGE", "radioChange.onCheckedChange runs");
+                            RadioGroup appRadioGroup=
+                                    testTodoListActivity.findViewById(R.id.todoListRadio);
+                            testTodoListActivity.radioChange.onCheckedChanged(appRadioGroup,
+                                    -1);
+                        }
+                    }
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            Log.i("TEST_RADIO_CHANGE", "Outside of radioChange.onCheckedChange");
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Verify that the radio button is selected
+            if (!(testTodoListActivity.updateButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled");
+            }
+            if (!(testTodoListActivity.deleteButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled ");
+            }
+            Assert.assertFalse(testTodoListActivity.updateButton.isEnabled());
+            Assert.assertFalse(testTodoListActivity.deleteButton.isEnabled());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+    }
+
+    @Test
+    public void test2ItemGroupNegativeOneIdWithUIClick()
+    {
+        try {
+            String testInput = "test1";
+            String testInputTwo="test2";
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+
+            /*
+             * Add Item number 2
+             */
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            /*
+             *Add the text to the database
+             *Verify the button exist
+             *
+             */
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInputTwo));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Click the Radio Button in the UI to see if onCheckedChangedNotices a difference
+            ViewInteraction RadioButtonInteraction=Espresso.onView(
+                    ViewMatchers.withText(testInputTwo));
+            RadioButtonInteraction.perform(ViewActions.click());
+            this.mainHandler.post(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            /**
+                             * Test onCheckedChange with multiple Item list -1 value
+                             */
+                            Log.i("TEST_RADIO_CHANGE", "radioChange.onCheckedChange runs");
+                            RadioGroup appRadioGroup=
+                                    testTodoListActivity.findViewById(R.id.todoListRadio);
+                            testTodoListActivity.radioChange.onCheckedChanged(appRadioGroup,
+                                    -1);
+                        }
+                    }
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            Log.i("TEST_RADIO_CHANGE", "Outside of radioChange.onCheckedChange");
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Verify that the radio button is selected
+            if (!(testTodoListActivity.updateButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled");
+            }
+            if (!(testTodoListActivity.deleteButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled ");
+            }
+            Assert.assertFalse(testTodoListActivity.updateButton.isEnabled());
+            Assert.assertFalse(testTodoListActivity.deleteButton.isEnabled());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+    }
+
+    @Test
+    public void test2ItemGroupNegativeOneIdWithOutUIClick()
+    {
+        try {
+            String testInput = "test1";
+            String testInputTwo="test2";
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+
+            /*
+             * Add Item number 2
+             */
+            Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
+                    ViewActions.click()
+            );
+            //Sleep between actions to give the UIThread time to catch up
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Should be in the add view
+            /*
+             *Add the text to the database
+             *Verify the button exist
+             *
+             */
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInputTwo));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Run function without clicking the radio to see how the onCheckedChange behaves
+            this.mainHandler.post(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            /**
+                             * Test onCheckedChange with multiple Item list -1 value
+                             */
+                            Log.i("TEST_RADIO_CHANGE", "radioChange.onCheckedChange runs");
+                            RadioGroup appRadioGroup=
+                                    testTodoListActivity.findViewById(R.id.todoListRadio);
+                            testTodoListActivity.radioChange.onCheckedChanged(appRadioGroup,
+                                    -1);
+                        }
+                    }
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            Log.i("TEST_RADIO_CHANGE", "Outside of radioChange.onCheckedChange");
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Verify that the radio button is selected
+            if (!(testTodoListActivity.updateButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled");
+            }
+            if (!(testTodoListActivity.deleteButton.isEnabled())) {
+                Log.i("VAR_STATUS", "UPDATE BUTTON is not enabled ");
+            }
+            Assert.assertFalse(testTodoListActivity.updateButton.isEnabled());
+            Assert.assertFalse(testTodoListActivity.deleteButton.isEnabled());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRemoveFromDatabaseAndUINullTask()
+    {
+            testTodoListActivity.removeTaskFromDatabaseAndUI(null);
+    }
+
+    @Test
+    public void testRemoveFromDatabaseAndUIOneTaskRemoveFirst()
+    {
+        try
+        {
+            String testInput="test1";
+            //Add Item to test with
+           ViewInteraction addButtonInteraction=
+                   Espresso.onView(ViewMatchers.withId(R.id.addButton));
+           addButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Button must be clicked to enable delete button
+            Espresso.onView(ViewMatchers.withText(testInput)).perform(
+                    ViewActions.click()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Click the delete Button under test
+            Espresso.onView(ViewMatchers.withId(R.id.removeButton)).perform(
+                    ViewActions.click()
+            );
+
+            //Assert there is no items in the task list
+            Assert.assertEquals(0, testTodoListActivity.tasks.size());
+            //Assert there is no items in the radio group
+            RadioGroup taskListRadioGroup=testTodoListActivity.findViewById(R.id.todoListRadio);
+            Assert.assertEquals(0, taskListRadioGroup.getChildCount());
+            //Assert there are no items in the database
+            Cursor taskCursor=testManager.getItemByText("test1");
+            Assert.assertEquals(0, taskCursor.getCount());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testRemoveFromDatabaseAndUITwoTasksRemoveFirst()
+    {
+        try
+        {
+            String testInput="test1";
+            String testInputTwo="test2";
+            //Add Item to test with
+            ViewInteraction addButtonInteraction=
+                    Espresso.onView(ViewMatchers.withId(R.id.addButton));
+            addButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            /*
+             * Add a Second Item
+             */
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            addButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Add the text to the database
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInputTwo));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+
+
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Button must be clicked to enable delete button
+            Espresso.onView(ViewMatchers.withText(testInput)).perform(
+                    ViewActions.click()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Click the delete Button under test
+            Espresso.onView(ViewMatchers.withId(R.id.removeButton)).perform(
+                    ViewActions.click()
+            );
+
+            //Assert there is no items in the task list
+            Assert.assertEquals(1, testTodoListActivity.tasks.size());
+            //Assert there is no items in the radio group
+            RadioGroup taskListRadioGroup=testTodoListActivity.findViewById(R.id.todoListRadio);
+            Assert.assertEquals(1, taskListRadioGroup.getChildCount());
+            //Assert there are no items in the database
+            Cursor taskCursor=testManager.getItemByText("test2");
+            Assert.assertEquals(1, taskCursor.getCount());
+            //Additionally check that task 2 which is test2 has an id of 0
+            task taskAtIndexZero=testTodoListActivity.tasks.get(0);
+            Assert.assertEquals("test2", taskAtIndexZero.getItem());
+            Assert.assertEquals(0, taskAtIndexZero.getId());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testRemoveFromDatabaseAndUITwoTasksRemoveLast()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testRemoveFromDatabaseAndUIThreeTasksRemoveSecond()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testRemoveFromDatabaseAndUIFourTasksRemoveSecond()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testOnRestartFromUpdateWithUpdatedTask()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testOnRestartFromAddWithAddedTask()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testOnRestartFromUpdateWithoutUpdatedTask()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testOnRestartFromAddWithoutAddedTask()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testNullAddTask()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testAddSingleTask()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testAddTwoTasks()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testNullUpdateTask()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testUpdateSingleTask()
+    {
+        Assert.fail();
+    }
+
+    @Test
+    public void testUpdateTwoTasks()
+    {
+        Assert.fail();
     }
 
 }
