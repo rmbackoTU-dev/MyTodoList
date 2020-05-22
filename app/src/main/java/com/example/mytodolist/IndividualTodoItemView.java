@@ -24,6 +24,7 @@ public class IndividualTodoItemView extends AppCompatActivity {
     public static final String TASK_UPDATE_INDEX="com.example.mytodolist.INTEGER";
     public Button addToListButton;
     public EditText todoEditBox;
+    public addToListClickListener addToListClick;
 
     /**
      * onCreate used when an activity is newly created by an intent, and is not
@@ -32,6 +33,9 @@ public class IndividualTodoItemView extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_individual_todo_item_view);
         manager=new databaseManager(this);
@@ -54,8 +58,8 @@ public class IndividualTodoItemView extends AppCompatActivity {
           todoEditBox.addTextChangedListener(editWatcher);
 
 
-          addToListClickListener addListListener= new addToListClickListener();
-          addToListButton.setOnClickListener(addListListener);
+          addToListClick = new addToListClickListener();
+          addToListButton.setOnClickListener(addToListClick);
 
     }
 
@@ -170,8 +174,13 @@ public class IndividualTodoItemView extends AppCompatActivity {
     {
 
         @Override
-        public void onClick(View v)
+        public void onClick(View v) throws IllegalArgumentException
         {
+
+            if(v==null){
+                throw new IllegalArgumentException();
+            }
+
             Intent returnToList=new Intent(v.getContext(), todoListView.class);
             returnToList.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             if(updateSet)

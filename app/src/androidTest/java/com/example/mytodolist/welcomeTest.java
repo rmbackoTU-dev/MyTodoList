@@ -8,6 +8,8 @@ import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.assertion.ViewAssertions;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import java.lang.Thread.*;
+import java.util.Arrays;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -145,7 +147,7 @@ public class welcomeTest {
             Espresso.closeSoftKeyboard();
             Thread.sleep(500);
             Matcher greetingText = ViewMatchers.withId(R.id.greeting);
-            Espresso.onView(greetingText).check(matches(not(withText(""))));
+            Espresso.onView(greetingText).check(matches(not(withText("null"))));
             Thread.sleep(500);
 
         }catch(InterruptedException ie){
@@ -165,6 +167,50 @@ public class welcomeTest {
             Thread.sleep(500);
             Matcher greetingText = ViewMatchers.withId(R.id.greeting);
             Espresso.onView(greetingText).check(matches(withText("Greetings 1")));
+            Thread.sleep(500);
+
+        }catch(InterruptedException ie){
+            ie.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void ispBooleanTrueTest() {
+        try{
+            boolean b1=true;
+            String s1 = Boolean.toString(b1);
+            Matcher editBox = ViewMatchers.withId(R.id.nameField);
+            Espresso.onView(editBox).perform(ViewActions.click());
+            Thread.sleep(500);
+            Espresso.onView(editBox).perform(ViewActions.typeText(s1));
+            Thread.sleep(500);
+            Espresso.closeSoftKeyboard();
+            Thread.sleep(500);
+            Matcher greetingText = ViewMatchers.withId(R.id.greeting);
+            Espresso.onView(greetingText).check(matches(withText("Greetings" + s1)));
+            Thread.sleep(500);
+
+        }catch(InterruptedException ie){
+            ie.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void ispBooleanFalseTest() {
+        try{
+            boolean b1=false;
+            String s1 = Boolean.toString(b1);
+            Matcher editBox = ViewMatchers.withId(R.id.nameField);
+            Espresso.onView(editBox).perform(ViewActions.click());
+            Thread.sleep(500);
+            Espresso.onView(editBox).perform(ViewActions.typeText(s1));
+            Thread.sleep(500);
+            Espresso.closeSoftKeyboard();
+            Thread.sleep(500);
+            Matcher greetingText = ViewMatchers.withId(R.id.greeting);
+            Espresso.onView(greetingText).check(matches(withText("Greetings" + s1)));
             Thread.sleep(500);
 
         }catch(InterruptedException ie){
@@ -253,6 +299,68 @@ public class welcomeTest {
 
         }
 
+    @Test
+    public void ispNewLineTest(){
+        try{
+            Matcher editBox = ViewMatchers.withId(R.id.nameField);
+            Espresso.onView(editBox).perform(ViewActions.click());
+            Thread.sleep(500);
+            Espresso.onView(editBox).perform(ViewActions.typeText("//"));
+            Thread.sleep(500);
+            Espresso.closeSoftKeyboard();
+            Thread.sleep(500);
+            Matcher greetingText = ViewMatchers.withId(R.id.greeting);
+            Espresso.onView(greetingText).check(matches(withText("Greetings //")));
+            Thread.sleep(500);
+
+        }catch(InterruptedException ie){
+            ie.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void ispStringArrayTest(){
+        try{
+            String[] stringArray = new String[2];
+            String arrayToString = Arrays.toString(stringArray);
+            Matcher editBox = ViewMatchers.withId(R.id.nameField);
+            Espresso.onView(editBox).perform(ViewActions.click());
+            Thread.sleep(500);
+            Espresso.onView(editBox).perform(ViewActions.typeText(arrayToString));
+            Thread.sleep(500);
+            Espresso.closeSoftKeyboard();
+            Thread.sleep(500);
+            Matcher greetingText = ViewMatchers.withId(R.id.greeting);
+            Espresso.onView(greetingText).check(matches(withText("Greetings" + stringArray)));
+            Thread.sleep(500);
+
+        }catch(InterruptedException ie){
+            ie.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void ispTabTest(){
+        try{
+            Matcher editBox = ViewMatchers.withId(R.id.nameField);
+            Espresso.onView(editBox).perform(ViewActions.click());
+            Thread.sleep(500);
+            Espresso.onView(editBox).perform(ViewActions.typeText("\t"));
+            Thread.sleep(500);
+            Espresso.closeSoftKeyboard();
+            Thread.sleep(500);
+            Matcher greetingText = ViewMatchers.withId(R.id.greeting);
+            Espresso.onView(greetingText).check(matches(withText("Greetings")));
+            Thread.sleep(500);
+
+        }catch(InterruptedException ie){
+            ie.printStackTrace();
+        }
+
+    }
+
 
 
     @Test
@@ -268,7 +376,7 @@ public class welcomeTest {
                 Espresso.closeSoftKeyboard();
                 Thread.sleep(500);
                 Matcher greetingText = ViewMatchers.withId(R.id.greeting);
-                Espresso.onView(greetingText).check(matches(withText("Greetings  ")));
+                Espresso.onView(greetingText).check(matches(withText("Greetings")));
                 Thread.sleep(500);
 
             }catch(InterruptedException ie){
