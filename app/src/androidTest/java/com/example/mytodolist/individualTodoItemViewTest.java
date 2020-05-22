@@ -8,6 +8,7 @@ import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.assertion.ViewAssertions;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import java.lang.Thread.*;
+import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +35,8 @@ import com.example.mytodolist.model.databaseManager;
 import com.example.mytodolist.model.task;
 
 import androidx.test.espresso.intent.matcher.*;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -66,8 +69,8 @@ public class individualTodoItemViewTest {
     @Rule
     public IntentsTestRule<IndividualTodoItemView> individualTest
             = new IntentsTestRule<> (IndividualTodoItemView.class);
-    public IntentsTestRule <todoListView> todoListViewTest =
-            new IntentsTestRule<>(todoListView.class);
+    public ActivityTestRule<IndividualTodoItemView> individualActivityRule=
+            new ActivityTestRule<>(IndividualTodoItemView.class);
 
     @Before
     public void setup()
@@ -83,7 +86,6 @@ public class individualTodoItemViewTest {
         Intents.intending(Matchers.not(
                 IntentMatchers.isInternal())).respondWith(
                 externalResult);
-        testIndividualTodoItemView=individualTest.getActivity();
 
 
     }
@@ -99,8 +101,11 @@ public class individualTodoItemViewTest {
     public void testNodeCoverageTextListenerAdd()
     {
         try{
-            testIntent.putExtra("UPDATE_SET",false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -123,8 +128,13 @@ public class individualTodoItemViewTest {
     public void testNodeCoverageTextListenerUpdate()
     {
         try{
-            testIntent.putExtra("UPDATE_SET",true);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", true);
+            task testTask=new task("test1", 0);
+            currentIntent.putExtra(todoListView.TODO_OBJ, testTask);;
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -145,7 +155,11 @@ public class individualTodoItemViewTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testISPCoverageOnClick(){
-
+        Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+        currentIntent.putExtra("UPDATE_SET", false);
+        individualActivityRule.launchActivity(currentIntent);
+        testIndividualTodoItemView=individualActivityRule.getActivity();
         testIndividualTodoItemView.addToListClick.onClick(null);
 
     }
@@ -154,8 +168,11 @@ public class individualTodoItemViewTest {
     public void testAddOnClick()
     {
         try{
-            testIntent.putExtra("UPDATE_SET",false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -182,8 +199,13 @@ public class individualTodoItemViewTest {
     public void testUpdateOnClick()
     {
         try{
-            testIntent.putExtra("UPDATE_SET",true);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", true);
+            task testTask=new task("test1", 0);
+            currentIntent.putExtra(todoListView.TODO_OBJ, testTask);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -208,14 +230,22 @@ public class individualTodoItemViewTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testIspNullAddItemToDatabase() {
+        Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+        currentIntent.putExtra("UPDATE_SET", false);
+        individualActivityRule.launchActivity(currentIntent);
+        testIndividualTodoItemView=individualActivityRule.getActivity();
         testIndividualTodoItemView.addItemToDatabase(null);
     }
 
     @Test
     public void testIspStringAddItemToDatabase() {
         try {
-            testIntent.putExtra("UPDATE_SET", false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -240,8 +270,11 @@ public class individualTodoItemViewTest {
     @Test
     public void testIspCharAddItemToDatabase() {
         try {
-            testIntent.putExtra("UPDATE_SET", false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -266,8 +299,11 @@ public class individualTodoItemViewTest {
     @Test
     public void testIspInt0AddItemToDatabase() {
         try {
-            testIntent.putExtra("UPDATE_SET", false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -280,7 +316,7 @@ public class individualTodoItemViewTest {
             );
             Cursor testCursor = testManager.getItemByText("0");
             Assert.assertEquals(1,testCursor.getCount());
-            task itemAdded = new task("c",0);
+            task itemAdded = new task("0",0);
             testManager.deleteTask(itemAdded);
 
         } catch (InterruptedException ie) {
@@ -292,8 +328,11 @@ public class individualTodoItemViewTest {
     @Test
     public void testIspIntNegativeAddItemToDatabase() {
         try {
-            testIntent.putExtra("UPDATE_SET", false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -318,8 +357,11 @@ public class individualTodoItemViewTest {
     @Test
     public void testIspIntPositiveAddItemToDatabase() {
         try {
-            testIntent.putExtra("UPDATE_SET", false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();;
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -344,8 +386,11 @@ public class individualTodoItemViewTest {
     @Test
     public void testIspEmptyAddItemToDatabase() {
         try {
-            testIntent.putExtra("UPDATE_SET", false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();;
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -357,7 +402,8 @@ public class individualTodoItemViewTest {
                     ViewActions.click()
             );
             Cursor testCursor = testManager.getItemByText("");
-            Assert.assertEquals(1,testCursor.getCount());
+            //expected to fail on all non visible characters
+            Assert.assertEquals(0,testCursor.getCount());
             task itemAdded = new task("",0);
             testManager.deleteTask(itemAdded);
 
@@ -370,8 +416,11 @@ public class individualTodoItemViewTest {
     @Test
     public void testIspMultipleStringLinesAddItemToDatabase() {
         try {
-            testIntent.putExtra("UPDATE_SET", false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();;
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -397,8 +446,11 @@ public class individualTodoItemViewTest {
             try {
                 String[] stringArray= new String[1];
                 String inputString = Arrays.toString(stringArray);
-                testIntent.putExtra("UPDATE_SET", false);
-                individualTest.launchActivity(testIntent);
+                Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+                Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+                currentIntent.putExtra("UPDATE_SET", false);
+                individualActivityRule.launchActivity(currentIntent);
+                testIndividualTodoItemView=individualActivityRule.getActivity();
                 Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
                 Espresso.onView(editBox).perform(ViewActions.click());
                 Thread.sleep(500);
@@ -422,9 +474,11 @@ public class individualTodoItemViewTest {
     @Test
     public void testIspTabAddItemToDatabase() {
         try {
-
-            testIntent.putExtra("UPDATE_SET", false);
-            individualTest.launchActivity(testIntent);
+            Context targetContext= InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Intent currentIntent=new Intent(targetContext, IndividualTodoItemView.class);
+            currentIntent.putExtra("UPDATE_SET", false);
+            individualActivityRule.launchActivity(currentIntent);
+            testIndividualTodoItemView=individualActivityRule.getActivity();
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -436,7 +490,8 @@ public class individualTodoItemViewTest {
                     ViewActions.click()
             );
             Cursor testCursor = testManager.getItemByText("\t");
-            Assert.assertEquals(1, testCursor.getCount());
+            //Should fail to parse only non-visible characters
+            Assert.assertEquals(0, testCursor.getCount());
             task itemAdded = new task("\t", 0);
             testManager.deleteTask(itemAdded);
 

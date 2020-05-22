@@ -47,7 +47,15 @@ public class IndividualTodoItemView extends AppCompatActivity {
         addToListButton.setEnabled(false);
 
         Intent updateIntent=getIntent();
-        updateSet=updateIntent.getExtras().getBoolean("UPDATE_SET");
+        Bundle updateExtras=updateIntent.getExtras();
+        if(updateExtras == null)
+        {
+            updateSet=false;
+        }
+        else
+        {
+            updateSet=updateExtras.getBoolean("UPDATE_SET");
+        }
         if(updateSet)
         {
             updateTask=(task) updateIntent.getSerializableExtra(todoListView.TODO_OBJ);
@@ -81,7 +89,12 @@ public class IndividualTodoItemView extends AppCompatActivity {
      * @return a boolean determining if the add to database was successful
      */
     public boolean addItemToDatabase(String itemText)
+    throws IllegalArgumentException
     {
+        if(itemText == null)
+        {
+            throw new IllegalArgumentException();
+        }
         boolean success=false;
         try {
             manager.insertTask(itemText);
@@ -110,7 +123,11 @@ public class IndividualTodoItemView extends AppCompatActivity {
      * @return
      */
     public boolean updateItemInDatabase(task updateTask, String updateText)
+    throws IllegalArgumentException
     {
+        if(updateTask ==null || updateTask == null){
+            throw new IllegalArgumentException();
+        }
         boolean success=false;
         try
         {

@@ -87,7 +87,7 @@ public class todoListViewTest {
         //Stub all external intents
         Intents.intending(Matchers.not(
                 IntentMatchers.isInternal())).respondWith(
-                        externalResult);
+                externalResult);
         testTodoListActivity=todoListViewIntentsRule.getActivity();
         testTodoListActivity.startActivity(testIntent);
         mainHandler=new Handler(Looper.getMainLooper());
@@ -164,7 +164,7 @@ public class todoListViewTest {
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, testIntent);
         Intents.intending(IntentMatchers.toPackage(
                 "com.example.mytodolist.IndividualTodoItemView")).respondWith(
-                        individualTodoItemViewStub);
+                individualTodoItemViewStub);
         Espresso.onView(ViewMatchers.withId(R.id.addButton)).perform(
                 ViewActions.click());
         Intents.intended(IntentMatchers.hasComponent(
@@ -517,10 +517,10 @@ public class todoListViewTest {
             Thread.sleep(DEFAULT_SLEEP_TIME);
             //Should be in the add view
             /*
-            *Add the text to the database
-            *Verify the button exist
-            *
-            */
+             *Add the text to the database
+             *Verify the button exist
+             *
+             */
             addToListButton.check(matches(ViewMatchers.isDisplayed()));
             editBoxMatcher.perform(ViewActions.click());
             Thread.sleep(DEFAULT_SLEEP_TIME);
@@ -871,7 +871,7 @@ public class todoListViewTest {
             Thread.sleep(DEFAULT_SLEEP_TIME);
             //click add To list in order to complete adding an item
             addToListButton.perform(ViewActions.click());
-
+            Thread.sleep(DEFAULT_SLEEP_TIME);
             /*
              * Add Item number 2
              */
@@ -965,7 +965,7 @@ public class todoListViewTest {
             Thread.sleep(DEFAULT_SLEEP_TIME);
             //click add To list in order to complete adding an item
             addToListButton.perform(ViewActions.click());
-
+            Thread.sleep(DEFAULT_SLEEP_TIME);
             /*
              * Add Item number 2
              */
@@ -1030,7 +1030,7 @@ public class todoListViewTest {
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveFromDatabaseAndUINullTask()
     {
-            testTodoListActivity.removeTaskFromDatabaseAndUI(null);
+        testTodoListActivity.removeTaskFromDatabaseAndUI(null);
     }
 
     @Test
@@ -1040,9 +1040,9 @@ public class todoListViewTest {
         {
             String testInput="test1";
             //Add Item to test with
-           ViewInteraction addButtonInteraction=
-                   Espresso.onView(ViewMatchers.withId(R.id.addButton));
-           addButtonInteraction.perform(ViewActions.click());
+            ViewInteraction addButtonInteraction=
+                    Espresso.onView(ViewMatchers.withId(R.id.addButton));
+            addButtonInteraction.perform(ViewActions.click());
             Thread.sleep(DEFAULT_SLEEP_TIME);
             //Add the text to the database
             ViewInteraction addToListButton =
@@ -1369,24 +1369,28 @@ public class todoListViewTest {
                 ViewInteraction addButtonInteraction=
                         Espresso.onView(ViewMatchers.withId(R.id.addButton));
                 addButtonInteraction.perform(ViewActions.click());
-                Thread.sleep(DEFAULT_SLEEP_TIME);
+                Thread.sleep(DEFAULT_SLEEP_TIME*4);
                 //Add the text to the database
                 ViewInteraction addToListButton =
                         Espresso.onView(ViewMatchers.withId(R.id.addToList));
                 //Verify the button exist
-                addToListButton.check(matches(ViewMatchers.isDisplayed()));
-                ViewInteraction editBoxMatcher =
-                        Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
-                editBoxMatcher.perform(ViewActions.click());
                 Thread.sleep(DEFAULT_SLEEP_TIME);
-                editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInputs[i]));
+                Espresso.onView(ViewMatchers.withId(R.id.todoEditBox)).perform(
+                        ViewActions.click()
+                );
                 Thread.sleep(DEFAULT_SLEEP_TIME);
-                editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                Espresso.onView(ViewMatchers.withId(R.id.todoEditBox)).perform(
+                        ViewActions.typeTextIntoFocusedView(testInputs[i]));
+                Thread.sleep(DEFAULT_SLEEP_TIME);
+                Espresso.onView(ViewMatchers.withId(R.id.todoEditBox)).check(
+                        matches(ViewMatchers.hasFocus())).perform(
                         ViewActions.closeSoftKeyboard()
                 );
+                addToListButton.check(matches(ViewMatchers.isDisplayed()));
                 Thread.sleep(DEFAULT_SLEEP_TIME);
                 //click add To list in order to complete adding an item
                 addToListButton.perform(ViewActions.click());
+                Thread.sleep(DEFAULT_SLEEP_TIME*4);
             }
 
             Thread.sleep(DEFAULT_SLEEP_TIME);
@@ -1399,6 +1403,7 @@ public class todoListViewTest {
             Espresso.onView(ViewMatchers.withId(R.id.removeButton)).perform(
                     ViewActions.click()
             );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
 
             //Assert there is 3 items in the task list
             Assert.assertEquals(3, testTodoListActivity.tasks.size());
@@ -1469,12 +1474,14 @@ public class todoListViewTest {
                     ViewMatchers.withId(R.id.todoEditBox)
             );
             updateEditBox.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
             updateEditBox.perform(ViewActions.typeText(testInputTwo));
             Espresso.closeSoftKeyboard();
+            Thread.sleep(DEFAULT_SLEEP_TIME);
             Espresso.onView(ViewMatchers.withId(R.id.addToList)).perform(
                     ViewActions.click()
             );
-
+            Thread.sleep(DEFAULT_SLEEP_TIME);
             //Check that after update is run onRestart added the updated task to tasks.
             ArrayList<task> testTasks=testTodoListActivity.tasks;
             task updatedTask=testTasks.get(0);
@@ -1513,6 +1520,7 @@ public class todoListViewTest {
             Thread.sleep(DEFAULT_SLEEP_TIME);
             //click add To list in order to complete adding an item
             addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
 
             //Assert the new task is displayed
             ArrayList<task> testTasks=testTodoListActivity.tasks;
@@ -1563,6 +1571,7 @@ public class todoListViewTest {
                     ViewMatchers.withId(R.id.updateButton));
             Thread.sleep(DEFAULT_SLEEP_TIME);
             updateButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
 
             //In the IndividualTodoItemTask
             Espresso.pressBack();

@@ -183,6 +183,10 @@ public class todoListView extends AppCompatActivity {
           int indexToSet=-1;
           /*Still need to pull whole database better solution would grab only task not in list
            maybe we could keep a counter*/
+          if(currentExtras == null)
+          {
+              onNewIntent(new Intent());
+          }
           updateRecordSet=currentExtras.getBoolean("UPDATE_RECORD_SET");
           manager.open();
           task updateTask;
@@ -455,7 +459,7 @@ public class todoListView extends AppCompatActivity {
                 //remove the task currently stored in tasks at the task id
                 //replace with the new task with the same id
                 tasks.remove(currentTask.getId());
-                tasks.add(currentTask.getId()-1, currentTask);
+                tasks.add(currentTask.getId(), currentTask);
                 taskLength=tasks.size();
             }
         }
