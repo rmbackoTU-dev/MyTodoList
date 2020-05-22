@@ -33,6 +33,9 @@ public class IndividualTodoItemView extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_individual_todo_item_view);
         manager=new databaseManager(this);
@@ -55,7 +58,7 @@ public class IndividualTodoItemView extends AppCompatActivity {
           todoEditBox.addTextChangedListener(editWatcher);
 
 
-          addToListClick= new addToListClickListener();
+          addToListClick = new addToListClickListener();
           addToListButton.setOnClickListener(addToListClick);
 
     }
@@ -171,8 +174,13 @@ public class IndividualTodoItemView extends AppCompatActivity {
     {
 
         @Override
-        public void onClick(View v)
+        public void onClick(View v) throws IllegalArgumentException
         {
+
+            if(v==null){
+                throw new IllegalArgumentException();
+            }
+
             Intent returnToList=new Intent(v.getContext(), todoListView.class);
             returnToList.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             if(updateSet)
