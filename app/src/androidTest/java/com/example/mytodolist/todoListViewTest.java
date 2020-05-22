@@ -1555,7 +1555,8 @@ public class todoListViewTest {
             addToListButton.perform(ViewActions.click());
             Thread.sleep(DEFAULT_SLEEP_TIME);
 
-            ViewInteraction radioInteraction = Espresso.onView(ViewMatchers.withText(testInput));
+            ViewInteraction radioInteraction = Espresso.onView(ViewMatchers.withTagValue(
+                    Matchers.is((Object)"id_0")));
             radioInteraction.perform(ViewActions.click());
 
             ViewInteraction updateButtonInteraction = Espresso.onView(
