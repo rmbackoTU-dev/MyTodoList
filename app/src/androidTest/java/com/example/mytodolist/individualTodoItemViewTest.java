@@ -32,6 +32,8 @@ import com.example.mytodolist.model.databaseManager;
 
 import androidx.test.espresso.intent.matcher.*;
 
+import junit.framework.Assert;
+
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -54,16 +56,10 @@ public class individualTodoItemViewTest {
     public IndividualTodoItemView testIndividualTodoItemView;
     public Intent testIntent;
     public final long  DEFAULT_SLEEP_TIME=500;
-    public Handler mainHandler;
-    //Set Time out of functions occurring outside main thread to 10 seconds
-    public final long timeOutAmount=10;
-    public final TimeUnit timeOutUnit=TimeUnit.SECONDS;
 
     @Rule
     public IntentsTestRule<IndividualTodoItemView> individualTest
             = new IntentsTestRule<> (IndividualTodoItemView.class);
-    public IntentsTestRule <todoListView> todoListViewTest =
-            new IntentsTestRule<>(todoListView.class);
 
     @Before
     public void setup()
@@ -71,15 +67,14 @@ public class individualTodoItemViewTest {
         testContext= ApplicationProvider.getApplicationContext();
         testManager=new databaseManager(testContext);
         testManager.open();
-        testIntent=new Intent(testContext, todoListView.class);
+        testIntent=new Intent(testContext, IndividualTodoItemView.class);
         Instrumentation.ActivityResult externalResult=
                 new Instrumentation.ActivityResult(Activity.RESULT_OK, testIntent);
         //Stub all external intents
         Intents.intending(Matchers.not(
                 IntentMatchers.isInternal())).respondWith(
+                externalResult);
         testIndividualTodoItemView=individualTest.getActivity();
-
-
     }
 
     @After
@@ -88,15 +83,15 @@ public class individualTodoItemViewTest {
         //We need to make sure the radio button is cleared out for the next test
         Log.i("TEAR_DOWN_INFO", "Running tear down");
         //RadioGroup clearTodoListRadio=testIndividualTodoItemView.findViewById(R.id.todoListRadio);
-        try {
-
-        }
-        catch (InterruptedException ie)
-        {
-            ie.printStackTrace();
-        }
-
-
+//        try {
+//
+//        }
+//        catch (InterruptedException ie)
+//        {
+//            ie.printStackTrace();
+//        }
+//
+//
         testManager.close();
         testIndividualTodoItemView.finish();
     }
@@ -106,7 +101,7 @@ public class individualTodoItemViewTest {
     {
         try{
             testIntent.putExtra("UPDATE_SET",false);
-            testIndividualTodoItemView.startActivity(testIntent);
+            individualTest.launchActivity(testIntent);
             Matcher editBox = ViewMatchers.withId(R.id.todoEditBox);
             Espresso.onView(editBox).perform(ViewActions.click());
             Thread.sleep(500);
@@ -114,11 +109,20 @@ public class individualTodoItemViewTest {
             Thread.sleep(500);
             Espresso.closeSoftKeyboard();
             Thread.sleep(500);
+            Button addToListButtonTest= testIndividualTodoItemView.addToListButton;
+            Assert.assertTrue(addToListButtonTest.isEnabled());
+
 
             //addToList.setEnabled(true);
         }catch(InterruptedException ie){
             ie.printStackTrace();
         }
-}
+    }
+
+    @Test
+    public void testNullAddToListClick()
+    {
+
+    }
 
 }

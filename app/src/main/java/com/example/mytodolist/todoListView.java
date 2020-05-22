@@ -20,7 +20,7 @@ public class todoListView extends AppCompatActivity {
     public ArrayList<task> tasks;
     private int taskLength=0;
     private task currentSelectedItem=null;
-    private Bundle currentExtras;
+    public Bundle currentExtras;
     public Button addButton;
     public Button deleteButton;
     public Button updateButton;
@@ -140,7 +140,7 @@ public class todoListView extends AppCompatActivity {
 //                updateIntent.putExtra(TODO_OBJ, currentSelectedItem);
 //                startActivity(updateIntent);
 //            }
-//        });
+
     }
 
     @Override
@@ -325,8 +325,12 @@ public class todoListView extends AppCompatActivity {
      * Called by getAllNewTasks to update items that have been modified
      * in the interface
      */
-    private void updateList(ArrayList<task> updateList)
+    public void updateList(ArrayList<task> updateList)
     {
+        if(updateList == null)
+        {
+            throw new IllegalArgumentException();
+        }
         RadioGroup radioButtonsGroup=findViewById(R.id.todoListRadio);
         task currentTask;
         RadioButton updateButton;
@@ -344,8 +348,14 @@ public class todoListView extends AppCompatActivity {
      * initially
      * @param tasksToAdd
      */
-    private ArrayList<task> addToList(ArrayList<task> tasksToAdd)
+    public ArrayList<task> addToList(ArrayList<task> tasksToAdd)
+    throws IllegalArgumentException
     {
+
+        if(tasksToAdd == null)
+        {
+            throw new IllegalArgumentException();
+        }
         RadioGroup currentRadioGroup=findViewById(R.id.todoListRadio);
         RadioButton newButton;
         task currentTask;
@@ -373,7 +383,14 @@ public class todoListView extends AppCompatActivity {
      * @return
      */
     public ArrayList<task> setDisplayedAndUpdated(ArrayList<task> taskList)
+    throws IllegalArgumentException
     {
+
+        if(taskList == null)
+        {
+            throw new IllegalArgumentException();
+        }
+
         task currentTask;
         ArrayList<task> newTaskList=new ArrayList<task>();
         task globalCurrentTask;

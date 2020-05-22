@@ -24,6 +24,7 @@ public class IndividualTodoItemView extends AppCompatActivity {
     public static final String TASK_UPDATE_INDEX="com.example.mytodolist.INTEGER";
     public Button addToListButton;
     public EditText todoEditBox;
+    public addToListClickListener addToListClick;
 
     /**
      * onCreate used when an activity is newly created by an intent, and is not
@@ -54,8 +55,8 @@ public class IndividualTodoItemView extends AppCompatActivity {
           todoEditBox.addTextChangedListener(editWatcher);
 
 
-          addToListClickListener addListListener= new addToListClickListener();
-          addToListButton.setOnClickListener(addListListener);
+          addToListClick= new addToListClickListener();
+          addToListButton.setOnClickListener(addToListClick);
 
     }
 

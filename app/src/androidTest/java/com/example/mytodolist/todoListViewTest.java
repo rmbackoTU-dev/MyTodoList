@@ -23,6 +23,7 @@ import androidx.test.espresso.ViewAssertion;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.assertion.ViewAssertions;
 import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.intent.VerificationMode;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.espresso.action.ViewActions;
@@ -1427,61 +1428,191 @@ public class todoListViewTest {
     @Test
     public void testOnRestartFromUpdateWithUpdatedTask()
     {
-        Assert.fail();
+        try
+        {
+            String testInput="test1";
+            String testInputTwo="test2";
+            //Add Item to test with
+            ViewInteraction addButtonInteraction=
+                    Espresso.onView(ViewMatchers.withId(R.id.addButton));
+            addButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+
+            ViewInteraction radioInteraction=Espresso.onView(ViewMatchers.withText(testInput));
+            radioInteraction.perform(ViewActions.click());
+
+            ViewInteraction updateButtonInteraction=Espresso.onView(
+                    ViewMatchers.withId(R.id.updateButton));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            updateButtonInteraction.perform(ViewActions.click());
+
+            //In the IndividualTodoItemTask
+            ViewInteraction updateEditBox=Espresso.onView(
+                    ViewMatchers.withId(R.id.todoEditBox)
+            );
+            updateEditBox.perform(ViewActions.click());
+            updateEditBox.perform(ViewActions.typeText(testInputTwo));
+            Espresso.closeSoftKeyboard();
+            Espresso.onView(ViewMatchers.withId(R.id.addToList)).perform(
+                    ViewActions.click()
+            );
+
+            //Check that after update is run onRestart added the updated task to tasks.
+            ArrayList<task> testTasks=testTodoListActivity.tasks;
+            task updatedTask=testTasks.get(0);
+            Assert.assertTrue(updatedTask.isUpdated());
+        }
+        catch( InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
     }
 
     @Test
     public void testOnRestartFromAddWithAddedTask()
     {
-        Assert.fail();
+        try {
+            String testInput = "test1";
+            //Add Item to test with
+            ViewInteraction addButtonInteraction =
+                    Espresso.onView(ViewMatchers.withId(R.id.addButton));
+            addButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+
+            //Assert the new task is displayed
+            ArrayList<task> testTasks=testTodoListActivity.tasks;
+            task addedTask=testTasks.get(0);
+            Assert.assertTrue(addedTask.isDisplayed());
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
+
     }
 
     @Test
     public void testOnRestartFromUpdateWithoutUpdatedTask()
     {
-        Assert.fail();
+        try {
+            String testInput = "test1";
+            //Add Item to test with
+            ViewInteraction addButtonInteraction =
+                    Espresso.onView(ViewMatchers.withId(R.id.addButton));
+            addButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Add the text to the database
+            ViewInteraction addToListButton =
+                    Espresso.onView(ViewMatchers.withId(R.id.addToList));
+            //Verify the button exist
+            addToListButton.check(matches(ViewMatchers.isDisplayed()));
+            ViewInteraction editBoxMatcher =
+                    Espresso.onView(ViewMatchers.withId(R.id.todoEditBox));
+            editBoxMatcher.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.perform(ViewActions.typeTextIntoFocusedView(testInput));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            editBoxMatcher.check(matches(ViewMatchers.hasFocus())).perform(
+                    ViewActions.closeSoftKeyboard()
+            );
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //click add To list in order to complete adding an item
+            addToListButton.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+
+            ViewInteraction radioInteraction = Espresso.onView(ViewMatchers.withText(testInput));
+            radioInteraction.perform(ViewActions.click());
+
+            ViewInteraction updateButtonInteraction = Espresso.onView(
+                    ViewMatchers.withId(R.id.updateButton));
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            updateButtonInteraction.perform(ViewActions.click());
+
+            //In the IndividualTodoItemTask
+            Espresso.pressBack();
+            Intents.intended(IntentMatchers.hasComponent(
+                    "com.example.mytodolist.todoListView"),
+                    Intents.times(3));
+            Intents.intended(IntentMatchers.hasExtra("UPDATE_RECORD_SET", false));
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
     }
 
     @Test
     public void testOnRestartFromAddWithoutAddedTask()
     {
-        Assert.fail();
+        try {
+            String testInput = "test1";
+            //Add Item to test with
+            ViewInteraction addButtonInteraction =
+                    Espresso.onView(ViewMatchers.withId(R.id.addButton));
+            addButtonInteraction.perform(ViewActions.click());
+            Thread.sleep(DEFAULT_SLEEP_TIME);
+            //Add the text to the database
+            Espresso.pressBack();
+            Intents.intended(IntentMatchers.hasComponent(
+                    "com.example.mytodolist.todoListView"),
+                    Intents.times(2));
+            //Check that when pressing back that the onNewIntent Changes the empty extras
+            //to add the UPDATE_RECORD_SET
+            boolean updateRecordSet= testTodoListActivity.currentExtras.getBoolean("UPDATE_RECORD_SET", false);
+            Assert.assertFalse(updateRecordSet);
+        }
+        catch(InterruptedException ie)
+        {
+            ie.printStackTrace();
+        }
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testNullAddTask()
     {
-        Assert.fail();
+        testTodoListActivity.addToList(null);
     }
 
-    @Test
-    public void testAddSingleTask()
-    {
-        Assert.fail();
-    }
 
-    @Test
-    public void testAddTwoTasks()
-    {
-        Assert.fail();
-    }
-
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testNullUpdateTask()
     {
-        Assert.fail();
-    }
-
-    @Test
-    public void testUpdateSingleTask()
-    {
-        Assert.fail();
-    }
-
-    @Test
-    public void testUpdateTwoTasks()
-    {
-        Assert.fail();
+        testTodoListActivity.updateList(null);
     }
 
 }
